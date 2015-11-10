@@ -1,38 +1,38 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Networking.NetworkSystem;
 
 public class ARNetworkDiscovery : NetworkDiscovery
 {
-
-	// Use this for initialization
-	void Start ()
-    {
-	    
-	}
-	
-	// Update is called once per frame
-	void Update ()
-    { 
-	
-	}
+    private bool isConnected;
+    private NetworkClient client;
 
     public override void OnReceivedBroadcast(string fromAddress, string data)
     {
         base.OnReceivedBroadcast(fromAddress, data);
-        Debug.LogFormat("Recieved from {0}", fromAddress);
+        if (!isConnected)
+        {
+            isConnected = true;
+            Debug.LogFormat("Recieved from {0}", fromAddress);
 
-        ConnectionConfig config = new ConnectionConfig();
-        int reiliableChannelId = config.AddChannel(QosType.Reliable);
+            NetworkManager nm = this.gameObject.AddComponent<NetworkManager>();
+            nm.logLevel = LogFilter.FilterLevel.Debug;
+            nm.networkAddress = fromAddress;
+            nm.networkPort = 7777;
 
-        HostTopology topology = new HostTopology(config, 10);
-        this.hostId = NetworkTransport.AddHost(topology, 50000);
+            client = nm.StartClient();
+            client.RegisterHandler(MsgType.Connect, OnConnected);
+        }
+    }
 
-        string msg = "Hallo von Klaus.";
-        byte[] buffer = System.Text.Encoding.UTF8.GetBytes(msg);
-
-        byte error;
-        int connectionId = NetworkTransport.Connect(this.hostId, fromAddress, 50000, 0, out error);
-        NetworkTransport.Send(hostId, connectionId, reiliableChannelId, buffer, buffer.Length, out error);
+    private void OnConnected(NetworkMessage netMsg)
+    {
+        Debug.Log("onconnected");
+        if(!client.Send(MsgType.Ready, new StringMessage("Reaaaady :D")))
+        {
+            Debug.LogError("Send misslungen");
+        }
     }
 }
