@@ -18,6 +18,7 @@ public class ARGameManager : MonoBehaviour {
 
     public void startMatch()
     {
+        Debug.Log("Start Match");
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
         nm.logLevel = LogFilter.FilterLevel.Info;
         nm.networkPort = 7777;
