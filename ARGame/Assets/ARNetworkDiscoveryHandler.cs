@@ -16,8 +16,10 @@ public class ARNetworkDiscoveryHandler : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
-	}
+        var option = new Dropdown.OptionData();
+        option.text = "Kein Match ausgewählt";
+        DropdownMatches.options.Add(option);
+    }
 	
 	// Update is called once per frame
 	void Update () {

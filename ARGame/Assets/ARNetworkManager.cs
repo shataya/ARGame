@@ -27,6 +27,14 @@ public class ARNetworkManager : NetworkManager {
     {
         // New Player connected
         base.OnServerConnect(conn);
+
+        foreach(var client in connectionsOnServer)
+        {
+            var tmpmsg = new ClientAddedMessage();
+            tmpmsg.ClientConnectionId = conn.connectionId;
+            NetworkServer.SendToClient(conn.connectionId, MyMsgType.ClientAdded, tmpmsg);
+        }
+
         connectionsOnServer.Add(conn);
         var msg = new ClientAddedMessage();
         msg.ClientConnectionId = conn.connectionId;
