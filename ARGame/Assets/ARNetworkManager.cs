@@ -31,7 +31,7 @@ public class ARNetworkManager : NetworkManager {
         foreach(var client in connectionsOnServer)
         {
             var tmpmsg = new ClientAddedMessage();
-            tmpmsg.ClientConnectionId = conn.connectionId;
+            tmpmsg.ClientConnectionId = client.connectionId;
             NetworkServer.SendToClient(conn.connectionId, MyMsgType.ClientAdded, tmpmsg);
         }
 
