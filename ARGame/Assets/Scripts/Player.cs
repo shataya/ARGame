@@ -2,8 +2,9 @@
 using UnityStandardAssets.CrossPlatformInput;
 using System.Collections;
 
-public class CardboardMovement : MonoBehaviour
+public class Player : MonoBehaviour
 {
+    public Transform headChild;
     public float movementSpeed = 3.0f;
 
     private const string HORIZONTAL_NAME = "Horizontal";
@@ -21,9 +22,7 @@ public class CardboardMovement : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        horizontal = CrossPlatformInputManager.GetAxis (HORIZONTAL_NAME);
-        vertical = CrossPlatformInputManager.GetAxis (VERTICAL_NAME);
-
-        this.transform.Translate ((Vector3.forward * vertical + Vector3.right * horizontal) * Time.deltaTime * movementSpeed);
+        vertical = Input.GetAxis (VERTICAL_NAME);
+        this.transform.Translate (headChild.forward * vertical * Time.deltaTime * movementSpeed);                
 	}
 }
