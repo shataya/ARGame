@@ -80,8 +80,8 @@ public class ARNetworkManager : NetworkManager {
     {
         //Erhalt der gegnerischen Einheiten
         MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
-
-
+        
+        ///Speichern der gegnerischen Monsterdata
     }
  
 
@@ -131,8 +131,15 @@ public class ARNetworkManager : NetworkManager {
         base.OnClientConnect(conn);
         conn.RegisterHandler(MyMsgType.ClientAdded, OnClientAdded);
         conn.RegisterHandler(MyMsgType.ClientReady, OnClientReady);
+        conn.RegisterHandler(MyMsgType.StartGame, OnClientStartGame);
+        conn.RegisterHandler(MyMsgType.MonsterDataSent, OnClientMonsterDataReceived);
         Debug.LogFormat("Client: Player is conected - {0}", conn.connectionId);
 
+    }
+
+    private void OnClientStartGame(NetworkMessage netMsg)
+    {
+        /// Starte Platzierung und Game
     }
 
     public void OnClientAdded(NetworkMessage netMsg)

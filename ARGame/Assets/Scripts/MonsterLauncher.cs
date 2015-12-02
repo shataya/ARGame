@@ -9,6 +9,14 @@ public class MonsterLauncher : MonoBehaviour
 
     private Dictionary<int, GameObject> placedMonsters;
 
+    public List<MonsterData> MonsterDataList
+    {
+        get
+        {
+            return placedMonsters.Select(m => m.Value.GetComponent<ARMonster>().Data).ToList();
+        }
+    }
+
     void Awake()
     {
         placedMonsters = new Dictionary<int, GameObject> ();

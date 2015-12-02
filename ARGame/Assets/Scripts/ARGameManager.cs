@@ -8,6 +8,7 @@ public class ARGameManager : MonoBehaviour
 {
     public GameObject startBlock;
     public GameObject lobbyBlock;
+    public GameObject player;
 
     // Use this for initialization
     void Start()
@@ -56,10 +57,11 @@ public class ARGameManager : MonoBehaviour
     }
 
 
-    public void sendMonsterData(List<MonsterData> monsters)
+    public void sendMonsterData()
     {
+        var ml = player.GetComponent<MonsterLauncher>();
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
-        nm.sendMonsterDataToServer(monsters);
+        nm.sendMonsterDataToServer(ml.MonsterDataList);
       
     }
 }
