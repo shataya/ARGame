@@ -17,11 +17,13 @@ public class MonsterDataMessage : MessageBase
         writer.Write (clientId);
 
         var bf = new BinaryFormatter ();
-        var buffer = new byte[16 * 1024];
-        using (var ms = new MemoryStream (buffer, 0, buffer.Length))
+        using (var ms = new MemoryStream ())
         {
+            Debug.Log ("schreibe...");
             bf.Serialize (ms, monsterData);
-            writer.WriteBytesFull (ms.ToArray ());
+            var binArr = ms.ToArray ();
+            Debug.Log ("msarr ser: " + binArr.Length);
+            writer.WriteBytesFull (binArr);
         }            
     }
 
@@ -29,12 +31,14 @@ public class MonsterDataMessage : MessageBase
     {
         clientId = reader.ReadInt32 ();
         var payload = reader.ReadBytesAndSize ();
+        Debug.Log ("payoad size: " + (payload == null ? "" : payload.Length.ToString()));
         var bf = new BinaryFormatter ();
 
-        var buffer = new byte[16 * 1024];
-        using (var ms = new MemoryStream (buffer, 0, buffer.Length))
+        using (var ms = new MemoryStream (payload))
         {
+            Debug.Log ("lese...");
             monsterData = (MonsterData[])bf.Deserialize (ms);
+            Debug.Log ("msarr des: " + monsterData.Length);
         }
     }
 }
