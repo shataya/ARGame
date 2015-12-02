@@ -6,11 +6,18 @@ public class MonsterData
 {
     public int id;
 
-    //public Vector3 position;
-    //public Quaternion rotation;
+    public float posX;
+    public float posY;
+    public float posZ;
 
-    //public int attackValue = 10;
-    //public int defenseValue = 10;    
+    public float rotX;
+    public float rotY;
+    public float rotZ;
+    public float rotW;
+ 
+
+    public int attackValue = 10;
+    public int defenseValue = 10;    
 
 	public MonsterData()
     {

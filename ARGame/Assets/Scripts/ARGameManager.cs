@@ -54,6 +54,8 @@ public class ARGameManager : MonoBehaviour
         nm.logLevel = LogFilter.FilterLevel.Info;
         nm.networkPort = 7777;
         nm.StartHost();
+        nm.OnStartGame = startGame;
+        nm.OnMonsterDataReceived = saveMonsterData;
 
         var nd = this.gameObject.GetComponent<ARNetworkDiscovery>();
         nd.StartAsServer();

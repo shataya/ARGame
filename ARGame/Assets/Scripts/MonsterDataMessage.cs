@@ -30,11 +30,13 @@ public class MonsterDataMessage : MessageBase
     public override void Deserialize(NetworkReader reader)
     {
         clientId = reader.ReadInt32 ();
+
+        //monsterData = reader.ReadBytesAndSize();
         var payload = reader.ReadBytesAndSize ();
         Debug.Log ("payoad size: " + (payload == null ? "" : payload.Length.ToString()));
         var bf = new BinaryFormatter ();
 
-        using (var ms = new MemoryStream (payload))
+        using (var ms = new MemoryStream (payload,0,payload.Length))
         {
             Debug.Log ("lese...");
             monsterData = (MonsterData[])bf.Deserialize (ms);

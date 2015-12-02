@@ -55,8 +55,13 @@ public class MonsterLauncher : MonoBehaviour
 
             MonsterData data = monster.Data;
             data.id = id;
-            //data.position = monsterTransform.position;
-            //data.rotation = monsterTransform.rotation;
+            data.posX = monsterTransform.position.x;
+            data.posY = monsterTransform.position.y;
+            data.posZ = monsterTransform.position.z;
+            data.rotX = monsterTransform.rotation.x;
+            data.rotY = monsterTransform.rotation.y;
+            data.rotZ = monsterTransform.rotation.z;
+            data.rotW = monsterTransform.rotation.w;
 
             placedMonsters.Add (id, monsterInstance);
             // TODO: Button ausgrauen
@@ -79,7 +84,7 @@ public class MonsterLauncher : MonoBehaviour
 
             foreach(var enemyMonster in data)
             {
-                GameObject monsterInstance = Instantiate (monsterPrefab) as GameObject;
+                GameObject monsterInstance = Instantiate (monsterPrefab, new Vector3(enemyMonster.posX, enemyMonster.posY, enemyMonster.posZ), new Quaternion(enemyMonster.rotX, enemyMonster.rotY, enemyMonster.rotZ, enemyMonster.rotW)) as GameObject;
                 monsterInstance.name = string.Format ("Monster Id: {0}", enemyMonster.id);
                 monsterInstance.transform.SetParent(enemy.transform);
 
