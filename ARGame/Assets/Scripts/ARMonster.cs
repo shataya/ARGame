@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ARMonster : MonoBehaviour {
+public class ARMonster : MonoBehaviour
+{
     private Animator animator;
+
+    public int ClientId { get; set; }
 
 	// Use this for initialization
 	void Start ()
@@ -13,16 +16,6 @@ public class ARMonster : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        bool attack = Input.GetButton("Fire1");
-        bool block = Input.GetButton("Fire2");
-
-        if (attack)
-        {
-            animator.SetTrigger("Attack");
-        }
-        else if (block)
-        {
-            animator.SetTrigger("Block");
-        }
+        
 	}
 }

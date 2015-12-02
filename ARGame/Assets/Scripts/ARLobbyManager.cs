@@ -21,9 +21,13 @@ public class ARLobbyManager : MonoBehaviour
             playerList = GameObject.FindGameObjectWithTag("PlayerList");
         }
         GameObject b = Button.Instantiate<GameObject>(buttonPrefab);
+
         var text = b.GetComponentInChildren<Text>();
         text.text = client.ClientConnectionId.ToString();
         b.transform.parent = playerList.transform;
+        b.GetComponent<RectTransform>().transform.localScale = new Vector3(1, 1, 1);
+        b.GetComponent<RectTransform>().transform.localRotation = Quaternion.identity;
+        b.GetComponent<RectTransform>().transform.localPosition = new Vector3(0, 0, 0);
     }
 
     public void readyForMatch()

@@ -22,6 +22,7 @@
 
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// @ingroup Scripts
 /// This script provides an implemention of Unity's `BaseInputModule` class, so
@@ -51,6 +52,8 @@ public class GazeInputModule : BaseInputModule {
            "Be sure it is on a layer that raycasts will ignore.")]
   public GameObject cursor;
 
+    public Image cursorImage;
+
   /// If cursor is not null, whether to show the cursor when a raycast occurs.
   public bool showCursor = true;
 
@@ -68,8 +71,11 @@ public class GazeInputModule : BaseInputModule {
   [HideInInspector]
   public Vector2 hotspot = new Vector2(0.5f, 0.5f);
 
-  private PointerEventData pointerData;
+    private GameObject lastPointerData;
+    private float firstPointerTime;
+    private PointerEventData pointerData;
   private Vector2 lastHeadPose;
+    private bool pointerDataClicked;
 
   /// @cond HIDDEN
   public override bool ShouldActivateModule() {
@@ -100,20 +106,56 @@ public class GazeInputModule : BaseInputModule {
     CastRayFromGaze();
     UpdateCurrentObject();
     PlaceCursor();
-
-    if (!Cardboard.SDK.TapIsTrigger && !Input.GetMouseButtonDown(0) && Input.GetMouseButton(0)) {
+      
+    if (!Cardboard.SDK.TapIsTrigger && !Input.GetMouseButtonDown(1) && Input.GetMouseButton(1)) {
       // Drag is only supported if TapIsTrigger is false.
       HandleDrag();
     } else if (Time.unscaledTime - pointerData.clickTime < clickTime) {
       // Delay new events until clickTime has passed.
     } else if (!pointerData.eligibleForClick &&
-               (Cardboard.SDK.Triggered || !Cardboard.SDK.TapIsTrigger && Input.GetMouseButtonDown(0))) {
+               (Cardboard.SDK.Triggered || !Cardboard.SDK.TapIsTrigger && Input.GetMouseButtonDown(1) )) {
       // New trigger action.
+   
       HandleTrigger();
-    } else if (!Cardboard.SDK.Triggered && !Input.GetMouseButton(0)) {
+    } else if (!Cardboard.SDK.Triggered && !Input.GetMouseButton(1)) {
       // Check if there is a pending click to handle.
       HandlePendingClick();
     }
+    if(!pointerData.eligibleForClick && Input.GetAxis("Submit")>0)
+        {
+            HandleTrigger();
+        }
+
+        
+
+    if (!pointerData.eligibleForClick && pointerData.pointerEnter && 
+            (lastPointerData == null 
+            || lastPointerData != pointerData.pointerCurrentRaycast.gameObject)
+            && (pointerData.pointerCurrentRaycast.gameObject.GetComponent<Button>() != null
+            || pointerData.pointerCurrentRaycast.gameObject.GetComponent<Dropdown>() != null))
+    {
+         lastPointerData = pointerData.pointerCurrentRaycast.gameObject;
+         firstPointerTime = Time.unscaledTime;
+            pointerDataClicked = false;
+    } 
+    if (lastPointerData !=null && pointerData!=null 
+            && (pointerData.pointerCurrentRaycast.gameObject.GetComponent<Button>() != null
+            || pointerData.pointerCurrentRaycast.gameObject.GetComponent<Dropdown>() != null))
+    {
+            cursorImage.fillAmount = (Time.unscaledTime - firstPointerTime) / 3.0f;
+            if(cursorImage.fillAmount>=1 && !pointerDataClicked)
+            {
+                HandleTrigger();
+                pointerDataClicked = true;
+
+            }
+    } else
+        {
+            lastPointerData = null;
+            cursorImage.fillAmount = 1;
+            pointerDataClicked = false;
+        }
+
   }
   /// @endcond
 
@@ -194,9 +236,9 @@ public class GazeInputModule : BaseInputModule {
       return;
     }
     var go = pointerData.pointerCurrentRaycast.gameObject;
-
-    // Send pointer up and click events.
-    ExecuteEvents.Execute(pointerData.pointerPress, pointerData, ExecuteEvents.pointerUpHandler);
+        Debug.Log(go);
+        // Send pointer up and click events.
+        ExecuteEvents.Execute(pointerData.pointerPress, pointerData, ExecuteEvents.pointerUpHandler);
     ExecuteEvents.Execute(pointerData.pointerPress, pointerData, ExecuteEvents.pointerClickHandler);
 
     if (pointerData.pointerDrag != null) {
@@ -219,16 +261,20 @@ public class GazeInputModule : BaseInputModule {
   private void HandleTrigger() {
     var go = pointerData.pointerCurrentRaycast.gameObject;
 
-    // Send pointer down event.
-    pointerData.pressPosition = pointerData.position;
+
+      
+        // Send pointer down event.
+        pointerData.pressPosition = pointerData.position;
     pointerData.pointerPressRaycast = pointerData.pointerCurrentRaycast;
     pointerData.pointerPress =
       ExecuteEvents.ExecuteHierarchy(go, pointerData, ExecuteEvents.pointerDownHandler)
         ?? ExecuteEvents.GetEventHandler<IPointerClickHandler>(go);
 
-    // Save the drag handler as well
-    pointerData.pointerDrag = ExecuteEvents.GetEventHandler<IDragHandler>(go);
+
+        // Save the drag handler as well
+        pointerData.pointerDrag = ExecuteEvents.GetEventHandler<IDragHandler>(go);
     if (pointerData.pointerDrag != null && !Cardboard.SDK.TapIsTrigger) {
+            
       ExecuteEvents.Execute(pointerData.pointerDrag, pointerData, ExecuteEvents.initializePotentialDrag);
     }
 
