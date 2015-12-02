@@ -3,15 +3,21 @@ using System.Collections;
 
 public class ARMonster : MonoBehaviour
 {
-    private Animator animator;
-
+    public int MonsterId { get; set; }
     public int ClientId { get; set; }
 
-	// Use this for initialization
-	void Start ()
+    public MonsterData Data { get; set; }
+	
+	void Awake ()
     {
-        this.animator = GetComponent<Animator>();
+        Data = new MonsterData ();
 	}
+
+    // Use this for initialization
+    void Start()
+    {
+
+    }
 	
 	// Update is called once per frame
 	void Update ()

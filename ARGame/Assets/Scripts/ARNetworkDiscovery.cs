@@ -11,9 +11,6 @@ public class ARNetworkDiscovery : NetworkDiscovery
     //private bool isConnected;
     private NetworkClient client;
     private Dictionary<string, string> foundMatches;
-   
-   
-   
 
     void Start()
     {
