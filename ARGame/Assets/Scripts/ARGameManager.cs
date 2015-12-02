@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
+using System.Collections.Generic;
 
 public class ARGameManager : MonoBehaviour
 {
@@ -52,5 +53,13 @@ public class ARGameManager : MonoBehaviour
         nm.StartClient();
         startBlock.SetActive(false);
         lobbyBlock.SetActive(true);
+    }
+
+
+    public void sendMonsterData(List<MonsterData> monsters)
+    {
+        var nm = this.gameObject.GetComponent<ARNetworkManager>();
+        nm.sendMonsterDataToServer(monsters);
+      
     }
 }

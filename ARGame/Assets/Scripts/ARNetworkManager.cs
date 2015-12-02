@@ -8,34 +8,105 @@ using UnityEngine.Networking.NetworkSystem;
 
 public class ARNetworkManager : NetworkManager {
 
-    private List<NetworkConnection> connectionsOnServer = new List<NetworkConnection>();
+
+    private List<ARClient> clientsOnServer = new List<ARClient>();
     private List<ARClient> connectionsOnClient = new List<ARClient>();
     private ARLobbyManager lobbyManager;
 
     private void Awake()
     {
         lobbyManager = GetComponent<ARLobbyManager>();
+
+
     }
 
     public class MyMsgType
     {
         public static short ClientAdded = MsgType.Highest + 1;
         public static short ClientReady = MsgType.Highest + 2;
+        public static short MonsterDataSent = MsgType.Highest + 3;
+        public static short StartGame = MsgType.Highest + 4;
     };
+
+
+    public void sendMonsterDataToServer(List<MonsterData> monsterData)
+    {
+        MonsterDataMessage monsterDataMessage = new MonsterDataMessage();
+        monsterDataMessage.monsterData = monsterData;
+        client.Send(MyMsgType.MonsterDataSent, monsterDataMessage);
+       
+    }
+
+    public void OnServerMonsterDataReceived(NetworkMessage netMsg)
+    {
+        MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
+        message.clientId = netMsg.conn.connectionId;
+
+        foreach (var client in clientsOnServer)
+        {
+            if(client.ClientConnectionId!=message.clientId)
+            {
+                NetworkServer.SendToClient(client.ClientConnectionId, MyMsgType.MonsterDataSent, message);
+            } else
+            {
+                client.Ready = true;
+            }
+          
+        }
+
+        if(checkIfAllAreReady())
+        {
+            // Send Start Game
+            var startMsg = new StartGameMessage();
+            startMsg.startTime = DateTime.Now.AddSeconds(60);
+            NetworkServer.SendToAll(MyMsgType.StartGame,startMsg);
+        }
+
+    }
+
+    private bool checkIfAllAreReady()
+    {
+        bool allReady = true;
+
+        foreach (var client in clientsOnServer)
+        {
+            allReady = client.Ready;
+        }
+
+        return allReady;
+    }
+
+    public void OnClientMonsterDataReceived(NetworkMessage netMsg)
+    {
+        //Erhalt der gegnerischen Einheiten
+        MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
+
+
+    }
+ 
 
     public override void OnServerConnect(NetworkConnection conn)
     {
         // New Player connected
         base.OnServerConnect(conn);
 
-        foreach(var client in connectionsOnServer)
+        foreach(var client in clientsOnServer)
         {
             var tmpmsg = new ClientAddedMessage();
-            tmpmsg.ClientConnectionId = client.connectionId;
+            tmpmsg.ClientConnectionId = client.ClientConnectionId;
             NetworkServer.SendToClient(conn.connectionId, MyMsgType.ClientAdded, tmpmsg);
         }
 
-        connectionsOnServer.Add(conn);
+     
+        var arclient = new ARClient();
+        arclient.ClientConnectionId = conn.connectionId;
+        arclient.Ready = false;
+    
+        clientsOnServer.Add(arclient);
+
+
+        conn.RegisterHandler(MyMsgType.MonsterDataSent, OnServerMonsterDataReceived);
+
         var msg = new ClientAddedMessage();
         msg.ClientConnectionId = conn.connectionId;
         NetworkServer.SendToAll(MyMsgType.ClientAdded, msg);
