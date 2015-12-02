@@ -11,6 +11,7 @@ public class ARGameManager : MonoBehaviour
     public GameObject startBlock;
     public GameObject lobbyBlock;
     public GameObject floorBlock;
+    public GameObject monsterUI;
     public Text counter;
     public GameObject player;
 
@@ -37,7 +38,10 @@ public class ARGameManager : MonoBehaviour
             {
                 //STARTEN
                 started = false;
-                
+                counter.gameObject.SetActive(false);
+                var ml = player.GetComponent<MonsterLauncher>();
+                ml.ActivateEnemies();
+
             }
         }
     }
@@ -82,12 +86,14 @@ public class ARGameManager : MonoBehaviour
     {
         lobbyBlock.SetActive(true);
         floorBlock.SetActive(false);
+        monsterUI.SetActive(true);
     }
 
     public void placeSoldiers()
     {
         lobbyBlock.SetActive(false);
         floorBlock.SetActive(true);
+        monsterUI.SetActive(false);
     }
 
     public void sendMonsterData()
@@ -96,19 +102,22 @@ public class ARGameManager : MonoBehaviour
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
         nm.sendMonsterDataToServer(ml.MonsterDataList);
 
+
         startBlock.SetActive(false);
         lobbyBlock.SetActive(false);
+        monsterUI.SetActive(false);
     }
 
     public void startGame(DateTime startTime)
     {
+        counter.gameObject.SetActive(true);
         this.startTime = startTime;
         this.started = true;
-
     }
 
     public void saveMonsterData(MonsterDataMessage monsterDataMessage)
     {
-
+        var ml = player.GetComponent<MonsterLauncher>();
+        ml.SetEnemies(monsterDataMessage.clientId, monsterDataMessage.monsterData);
     }
 }

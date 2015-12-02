@@ -9,6 +9,7 @@ public class MonsterLauncher : MonoBehaviour
 
     private Dictionary<int, GameObject> placedMonsters;
     private Dictionary<int, List<GameObject>> enemyMonsters;
+    private List<GameObject> enemyGroups;
 
     public List<MonsterData> MonsterDataList
     {
@@ -22,6 +23,7 @@ public class MonsterLauncher : MonoBehaviour
     {
         placedMonsters = new Dictionary<int, GameObject> ();
         enemyMonsters = new Dictionary<int, List<GameObject>> ();
+        enemyGroups = new List<GameObject>();
     }
 
 	// Use this for initialization
@@ -73,6 +75,7 @@ public class MonsterLauncher : MonoBehaviour
             enemyMonsters.Add (id, new List<GameObject> ());
             GameObject enemy = new GameObject (string.Format ("Enemy Id: {0}", id));
             enemy.SetActive (false);
+            enemyGroups.Add(enemy);
 
             foreach(var enemyMonster in data)
             {
@@ -86,6 +89,14 @@ public class MonsterLauncher : MonoBehaviour
 
                 enemyMonsters[id].Add (monsterInstance);
             }
+        }
+    }
+
+    public void ActivateEnemies()
+    {
+        foreach (var enemy in enemyGroups)
+        {
+            enemy.SetActive(true);
         }
     }
 }
