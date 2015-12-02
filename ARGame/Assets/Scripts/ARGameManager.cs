@@ -3,12 +3,20 @@ using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 using System.Collections.Generic;
+using System;
+using UnityEngine.UI;
 
 public class ARGameManager : MonoBehaviour
 {
     public GameObject startBlock;
     public GameObject lobbyBlock;
+    public GameObject floorBlock;
+    public Text counter;
     public GameObject player;
+
+    public DateTime startTime;
+
+    public bool started = false;
 
     // Use this for initialization
     void Start()
@@ -20,7 +28,18 @@ public class ARGameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(started)
+        {
+            var timetostart = startTime.Subtract(DateTime.Now).TotalSeconds;
+            counter.text = timetostart.ToString();
 
+            if(timetostart<=0)
+            {
+                //STARTEN
+                started = false;
+                
+            }
+        }
     }
 
 
@@ -46,6 +65,7 @@ public class ARGameManager : MonoBehaviour
         nd.StartAsClient();
     }
 
+
     public void joinMatch(int match)
     {
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
@@ -54,14 +74,41 @@ public class ARGameManager : MonoBehaviour
         nm.StartClient();
         startBlock.SetActive(false);
         lobbyBlock.SetActive(true);
+        nm.OnStartGame = startGame;
+        nm.OnMonsterDataReceived = saveMonsterData;
     }
 
+    public void backToLobby()
+    {
+        lobbyBlock.SetActive(true);
+        floorBlock.SetActive(false);
+    }
+
+    public void placeSoldiers()
+    {
+        lobbyBlock.SetActive(false);
+        floorBlock.SetActive(true);
+    }
 
     public void sendMonsterData()
     {
         var ml = player.GetComponent<MonsterLauncher>();
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
         nm.sendMonsterDataToServer(ml.MonsterDataList);
-      
+
+        startBlock.SetActive(false);
+        lobbyBlock.SetActive(false);
+    }
+
+    public void startGame(DateTime startTime)
+    {
+        this.startTime = startTime;
+        this.started = true;
+
+    }
+
+    public void saveMonsterData(MonsterDataMessage monsterDataMessage)
+    {
+
     }
 }

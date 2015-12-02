@@ -13,6 +13,10 @@ public class ARNetworkManager : NetworkManager {
     private List<ARClient> connectionsOnClient = new List<ARClient>();
     private ARLobbyManager lobbyManager;
 
+    public Action<MonsterDataMessage> OnMonsterDataReceived { get; set; }
+
+    public Action<DateTime> OnStartGame { get; set; }
+
     private void Awake()
     {
         lobbyManager = GetComponent<ARLobbyManager>();
