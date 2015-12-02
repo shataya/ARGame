@@ -100,8 +100,9 @@ public class ARGameManager : MonoBehaviour
     {
         var ml = player.GetComponent<MonsterLauncher>();
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
-        nm.sendMonsterDataToServer(ml.MonsterDataList);
 
+        var mlArr = ml.MonsterDataList;
+        nm.sendMonsterDataToServer(mlArr);
 
         startBlock.SetActive(false);
         lobbyBlock.SetActive(false);

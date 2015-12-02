@@ -11,11 +11,11 @@ public class MonsterLauncher : MonoBehaviour
     private Dictionary<int, List<GameObject>> enemyMonsters;
     private List<GameObject> enemyGroups;
 
-    public List<MonsterData> MonsterDataList
+    public MonsterData[] MonsterDataList
     {
         get
         {
-            return placedMonsters.Select(m => m.Value.GetComponent<ARMonster>().Data).ToList();
+            return placedMonsters.Select(m => m.Value.GetComponent<ARMonster>().Data).ToArray();
         }
     }
 
@@ -55,8 +55,8 @@ public class MonsterLauncher : MonoBehaviour
 
             MonsterData data = monster.Data;
             data.id = id;
-            data.position = monsterTransform.position;
-            data.rotation = monsterTransform.rotation;
+            //data.position = monsterTransform.position;
+            //data.rotation = monsterTransform.rotation;
 
             placedMonsters.Add (id, monsterInstance);
             // TODO: Button ausgrauen
@@ -68,7 +68,7 @@ public class MonsterLauncher : MonoBehaviour
         }
     }
 
-    public void SetEnemies(int id, List<MonsterData> data)
+    public void SetEnemies(int id, MonsterData[] data)
     {
         if(!enemyMonsters.ContainsKey(id))
         {
@@ -79,9 +79,9 @@ public class MonsterLauncher : MonoBehaviour
 
             foreach(var enemyMonster in data)
             {
-                GameObject monsterInstance = Instantiate (monsterPrefab, enemyMonster.position, enemyMonster.rotation) as GameObject;
+                GameObject monsterInstance = Instantiate (monsterPrefab) as GameObject;
                 monsterInstance.name = string.Format ("Monster Id: {0}", enemyMonster.id);
-                monsterInstance.transform.parent = enemy.transform;
+                monsterInstance.transform.SetParent(enemy.transform);
 
                 ARMonster monster = monsterInstance.GetComponent<ARMonster> ();
                 monster.MonsterId = enemyMonster.id;
@@ -94,6 +94,11 @@ public class MonsterLauncher : MonoBehaviour
 
     public void ActivateEnemies()
     {
+        foreach(var ownMonster in placedMonsters)
+        {
+            ownMonster.Value.SetActive (false);
+        }
+
         foreach (var enemy in enemyGroups)
         {
             enemy.SetActive(true);

@@ -138,7 +138,7 @@ public class GazeInputModule : BaseInputModule {
          firstPointerTime = Time.unscaledTime;
             pointerDataClicked = false;
     } 
-    if (lastPointerData !=null && pointerData!=null 
+    if (lastPointerData !=null && pointerData!=null && pointerData.pointerCurrentRaycast.gameObject != null
             && (pointerData.pointerCurrentRaycast.gameObject.GetComponent<Button>() != null
             || pointerData.pointerCurrentRaycast.gameObject.GetComponent<Dropdown>() != null))
     {

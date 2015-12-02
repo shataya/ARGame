@@ -33,23 +33,24 @@ public class ARNetworkManager : NetworkManager {
     };
 
 
-    public void sendMonsterDataToServer(List<MonsterData> monsterData)
+    public void sendMonsterDataToServer(MonsterData[] monsterData)
     {
         MonsterDataMessage monsterDataMessage = new MonsterDataMessage();
-        monsterDataMessage.monsterData = monsterData;
-        client.Send(MyMsgType.MonsterDataSent, monsterDataMessage);
-       
+        monsterDataMessage.monsterData = monsterData;        
+        client.Send(MyMsgType.MonsterDataSent, monsterDataMessage);       
     }
 
     public void OnServerMonsterDataReceived(NetworkMessage netMsg)
     {
         MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
+        Debug.Log (message == null ? "msg on srv is null" : (message.monsterData == null ? "monsterData null bei serverRec" : message.monsterData.Length.ToString ()));
         message.clientId = netMsg.conn.connectionId;
 
         foreach (var client in clientsOnServer)
         {
             if(client.ClientConnectionId!=message.clientId)
             {
+                Debug.Log ("Schicke an Client: " + client.ClientConnectionId);
                 NetworkServer.SendToClient(client.ClientConnectionId, MyMsgType.MonsterDataSent, message);
             } else
             {
@@ -62,7 +63,7 @@ public class ARNetworkManager : NetworkManager {
         {
             // Send Start Game
             var startMsg = new StartGameMessage();
-            startMsg.startTime = DateTime.Now.AddSeconds(60);
+            //startMsg.startTime = DateTime.Now.AddSeconds(60);
             NetworkServer.SendToAll(MyMsgType.StartGame,startMsg);
         }
 
@@ -70,22 +71,20 @@ public class ARNetworkManager : NetworkManager {
 
     private bool checkIfAllAreReady()
     {
-        bool allReady = true;
-
         foreach (var client in clientsOnServer)
         {
-            allReady = client.Ready;
+            if (!client.Ready)
+                return false;    
         }
-
-        return allReady;
+        return true;
     }
 
     public void OnClientMonsterDataReceived(NetworkMessage netMsg)
     {
         //Erhalt der gegnerischen Einheiten
         MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
-        
-        ///Speichern der gegnerischen Monsterdata
+        Debug.Log (message == null ? "msg on client is null" : (message.monsterData == null ? "monsterData null bei clientRec" : message.monsterData.Length.ToString()));
+        OnMonsterDataReceived (message);
     }
  
 
@@ -143,7 +142,9 @@ public class ARNetworkManager : NetworkManager {
 
     private void OnClientStartGame(NetworkMessage netMsg)
     {
-        /// Starte Platzierung und Game
+        // Starte Platzierung und Game
+        var msg = netMsg.ReadMessage<StartGameMessage> ();
+        OnStartGame (msg.startTime);
     }
 
     public void OnClientAdded(NetworkMessage netMsg)
