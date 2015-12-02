@@ -3,9 +3,8 @@ using System.Collections;
 using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.Networking;
 
-public class ClientAddedMessage : MessageBase{
-
+public class ClientAddedMessage : MessageBase
+{
     public int ClientConnectionId;
-    public string ClientName;
-	
+    public string ClientName;	
 }
