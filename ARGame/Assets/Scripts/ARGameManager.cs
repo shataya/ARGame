@@ -123,4 +123,6 @@ public class ARGameManager : MonoBehaviour
         var ml = player.GetComponent<MonsterLauncher>();
         ml.SetEnemies(monsterDataMessage.clientId, monsterDataMessage.monsterData);
     }
+
+    
 }

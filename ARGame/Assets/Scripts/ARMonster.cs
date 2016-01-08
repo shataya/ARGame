@@ -8,11 +8,7 @@ public class ARMonster : MonoBehaviour
 
     public MonsterData Data { get; set; }
 	
-	void Awake ()
-    {
-        Data = new MonsterData ();
-	}
-
+	
     // Use this for initialization
     void Start()
     {
