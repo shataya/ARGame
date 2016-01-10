@@ -11,6 +11,8 @@ public class MonsterLauncher : MonoBehaviour
     private Dictionary<int, List<GameObject>> enemyMonsters;
     private List<GameObject> enemyGroups;
 
+    private float monsterDetectionRadius;
+
     public MonsterData[] MonsterDataList
     {
         get
@@ -29,9 +31,13 @@ public class MonsterLauncher : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
-	    if(!monsterPrefab)
+        if (!monsterPrefab)
         {
             Debug.LogError ("Kein Monster-Prefab zugewiesen.");
+        }
+        else
+        {
+            monsterDetectionRadius = monsterPrefab.GetComponent<ARMonster> ().detectionRadius;
         }
 	}
 	
@@ -44,7 +50,7 @@ public class MonsterLauncher : MonoBehaviour
     public void PlaceMonster(int id)
     {
         if (!placedMonsters.ContainsKey (id) && 
-            placedMonsters.Count (kv => GameUtil.IsInRadius (transform.position, 10.0f, kv.Value.transform.position)) == 0)
+            placedMonsters.Count (kv => GameUtil.IsInRadius (transform.position, monsterDetectionRadius, kv.Value.transform.position)) == 0)
         {
             GameObject monsterInstance = Instantiate (monsterPrefab, transform.position, transform.rotation) as GameObject;
             monsterInstance.name = string.Format ("Monster Id: {0}", id);
