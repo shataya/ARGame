@@ -43,9 +43,8 @@ public class ARMonster : MonoBehaviour
 	void Awake ()
     {      
         Data = new MonsterData ();
-        tempPos = transform.position;
-        rigidbody = GetComponent<Rigidbody> ();
-        animator = GetComponent<Animator> ();
+        tempPos = transform.position;        
+        animator = GetComponent<Animator> ();               
     }
 
     // Use this for initialization
@@ -56,6 +55,11 @@ public class ARMonster : MonoBehaviour
         {
             Debug.LogError ("Player nicht gefunden");
         }
+        
+        if(canInteract)
+        {
+            rigidbody = gameObject.AddComponent<Rigidbody> ();
+        }            
     }
 	
 	// Update is called once per frame
@@ -73,7 +77,7 @@ public class ARMonster : MonoBehaviour
                     Attack ();
                 }
             }
-        }            
+        }              
     }
 
     void FixedUpdate()
@@ -162,6 +166,7 @@ public class ARMonster : MonoBehaviour
         {
             EnergyBall eb = ball.GetComponent<EnergyBall> ();
             eb.playerDir = player.transform.position;
+            eb.damage = Data.attackValue / 2.0f;
             ball.SetActive (true);
         }
     }
@@ -195,38 +200,33 @@ public class ARMonster : MonoBehaviour
     public void TakeHit(Vector3 point, HitMode mode)
     {
         if(canInteract)
-        {
-            GameObject hitInfo = Instantiate (hitInfoText, point, Quaternion.identity) as GameObject;
-            TextMesh mesh = hitInfo.GetComponent<TextMesh> ();
-            float damage = Random.Range(100f, 300f);
-
+        {            
+            float damage = Random.Range(100f, 200f);
+            float reducedInnerFactor = 0.75f;
+            float reducedOuterFactor = 0.25f;
             switch (mode)
-            {
-                case HitMode.Head:
-                    damage *= 1.5f;
-                Debug.Log ("In Kopp");
-                break;
+            {                
                 case HitMode.LeftInnerWing:
-                Debug.Log ("Links vom Kopp");
-                break;
-                case HitMode.LeftOutterWing:
-                Debug.Log ("Links außen");
-                break;
                 case HitMode.RightInnerWing:
-                Debug.Log ("In Rechts vom Kopp");
+                damage *= reducedInnerFactor;
                 break;
+                case HitMode.LeftOutterWing:  
                 case HitMode.RightOuterWing:
-                Debug.Log ("Rechts außen");
+                damage *= reducedOuterFactor;
                 break;
             }
-            mesh.text = Mathf.Round((float)damage).ToString();
-            StartCoroutine (AnimateHitInfo (hitInfo));
-
             health -= damage;
-            if(health <= 0.0f)
+            if (health <= 0.0f)
             {
                 StartCoroutine (Die ());
             }
+            else
+            {
+                GameObject hitInfo = Instantiate (hitInfoText, point, Quaternion.identity) as GameObject;
+                TextMesh mesh = hitInfo.GetComponent<TextMesh> ();
+                mesh.text = Mathf.Round ((float)damage).ToString ();
+                StartCoroutine (AnimateHitInfo (hitInfo));
+            }     
         }        
     }
 }

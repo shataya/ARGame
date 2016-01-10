@@ -9,6 +9,7 @@ using System;
 public class MonsterLauncher : MonoBehaviour
 {
     public GameObject monsterPrefab;
+    public GameObject monsterPrefabWithoutCollider;
 
     public List<Text> attackMonsters;
     public List<Text> defMonsters;
@@ -53,10 +54,6 @@ public class MonsterLauncher : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
-	    if(!monsterPrefab)
-        {
-            Debug.LogError ("Kein Monster-Prefab zugewiesen.");
-        }
         monsterDatas = new List<MonsterData>();
         for(int i = 0; i < 4; i++)
         {
@@ -85,7 +82,7 @@ public class MonsterLauncher : MonoBehaviour
         {
             monsterImages[id].color = new Color(1,1,1,0.5f);
 
-            GameObject monsterInstance = Instantiate (monsterPrefab, transform.position, transform.rotation) as GameObject;
+            GameObject monsterInstance = Instantiate (monsterPrefabWithoutCollider, transform.position, transform.rotation) as GameObject;
             monsterInstance.name = string.Format ("Monster Id: {0}", id);
             Transform monsterTransform = monsterInstance.transform;
 

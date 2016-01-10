@@ -10,7 +10,8 @@ public class EnergyBall : MonoBehaviour
     [HideInInspector]
     public Vector3 playerDir;
 
-
+    [HideInInspector]
+    public float damage;
 
     public float speed = 0.1f;
 
