@@ -15,8 +15,8 @@ public class MonsterData
     public float rotZ;
     public float rotW; 
 
-    public int attackValue = 10;
-    public int defenseValue = 10;    
+    public int attackValue = 0;
+    public int defenseValue = 0;    
 
 	public MonsterData()
     {

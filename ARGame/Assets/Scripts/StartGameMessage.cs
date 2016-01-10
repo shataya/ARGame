@@ -6,6 +6,6 @@ using UnityEngine.Networking;
 
 public class StartGameMessage : MessageBase
 {
-    public DateTime startTime;
+    public long startTime;
 }
 

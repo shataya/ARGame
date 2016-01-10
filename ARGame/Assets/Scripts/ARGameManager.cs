@@ -31,8 +31,9 @@ public class ARGameManager : MonoBehaviour
     {
         if(started)
         {
-            var timetostart = startTime.Subtract(DateTime.Now).TotalSeconds;
-            counter.text = timetostart.ToString();
+            var timetostart = startTime.Subtract(DateTime.UtcNow).TotalSeconds;
+            Debug.LogFormat("Time to Start: {0}", timetostart);
+            counter.text = Mathf.CeilToInt((float)timetostart).ToString();
 
             if(timetostart<=0)
             {
@@ -111,10 +112,14 @@ public class ARGameManager : MonoBehaviour
         monsterUI.SetActive(false);
     }
 
-    public void startGame(DateTime startTime)
+    public void startGame(long startTime)
     {
+        Debug.LogFormat("Starte Game mit Counter {0}", startTime);
         counter.gameObject.SetActive(true);
-        this.startTime = startTime;
+        System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+        this.startTime = dtDateTime.AddSeconds(startTime).ToUniversalTime();
+   
+
         this.started = true;
     }
 
@@ -123,4 +128,6 @@ public class ARGameManager : MonoBehaviour
         var ml = player.GetComponent<MonsterLauncher>();
         ml.SetEnemies(monsterDataMessage.clientId, monsterDataMessage.monsterData);
     }
+
+    
 }
