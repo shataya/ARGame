@@ -15,7 +15,7 @@ public class ARNetworkManager : NetworkManager {
 
     public Action<MonsterDataMessage> OnMonsterDataReceived { get; set; }
 
-    public Action<DateTime> OnStartGame { get; set; }
+    public Action<long> OnStartGame { get; set; }
 
     private void Awake()
     {
@@ -63,8 +63,11 @@ public class ARNetworkManager : NetworkManager {
         {
             // Send Start Game
             var startMsg = new StartGameMessage();
-            //startMsg.startTime = DateTime.Now.AddSeconds(60);
+            var tmp = DateTime.UtcNow.AddSeconds(60);
+            var timeSpan = (tmp - new DateTime(1970, 1, 1, 0, 0, 0));
+            startMsg.startTime =(long)timeSpan.TotalSeconds;
             NetworkServer.SendToAll(MyMsgType.StartGame,startMsg);
+            Debug.Log("Starte Game");
         }
 
     }
