@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public enum AttackMode : int
 {
@@ -32,9 +33,12 @@ public class ARMonster : MonoBehaviour
     public float movingRadius = 10.0f;
     public float detectionRadius = 20.0f;
     public float attackInterval = 3.0f;
+    public bool canInteract = true;
+    public float health = 100.0f;
 
     public GameObject leftEnergyball;
     public GameObject rightEnergyball;
+    public GameObject hitInfoText;
 
 	void Awake ()
     {      
@@ -57,16 +61,19 @@ public class ARMonster : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        SearchForPlayer ();
-        
-        if(canSeePlayer)
+        if(canInteract)
         {
-            if(Time.time > nextAttack)
+            SearchForPlayer ();
+
+            if (canSeePlayer)
             {
-                nextAttack = Time.time + attackInterval;
-                Attack ();
-            }           
-        }      
+                if (Time.time > nextAttack)
+                {
+                    nextAttack = Time.time + attackInterval;
+                    Attack ();
+                }
+            }
+        }            
     }
 
     void FixedUpdate()
@@ -81,8 +88,7 @@ public class ARMonster : MonoBehaviour
                 if (newSlidePos.y < tempPos.y)
                 {
                     newSlidePos.y = tempPos.y;
-                }
-                //Debug.Log ("generated: " + newSlidePos);                    
+                }                    
             }
 
             var newTarget = (newSlidePos - rigidbody.position).normalized * speed;
@@ -91,19 +97,20 @@ public class ARMonster : MonoBehaviour
             if (Vector3.Distance (rigidbody.position, newSlidePos) < positionReachThreshold)
             {
                 generateNewPos = true;
-                //Debug.Log ("reached: " + transform.position);
             }
         }
     }
 
     void LateUpdate()
     {
-        transform.LookAt (player.transform);        
+        if(canInteract)
+        {
+            transform.LookAt (player.transform);
+        }             
     }
 
     void OnCollisionStay()
     {
-        //Debug.Log ("Collision detected");
         generateNewPos = true;
     }
 
@@ -157,5 +164,68 @@ public class ARMonster : MonoBehaviour
             eb.playerDir = player.transform.position;
             ball.SetActive (true);
         }
-    }    
+    }
+
+    IEnumerator Die()
+    {
+        canInteract = false;
+        yield return new WaitForSeconds (1.0f);
+
+        Destroy (gameObject);
+    }
+
+    IEnumerator AnimateHitInfo(GameObject hitInfo)
+    {
+        Material material = hitInfo.GetComponent<MeshRenderer> ().material;
+        Transform transform = hitInfo.transform;
+        Vector3 target = transform.position + Vector3.up * 2.0f;
+        float animTime = 4.0f;
+
+        while(material.color.a > 0.1f)
+        {
+            material.color = Color.Lerp (material.color, Color.clear, 0.5f * animTime * Time.deltaTime);
+            transform.position = Vector3.Lerp (transform.position, target, animTime * Time.deltaTime);        
+
+            yield return null;
+        }        
+        Destroy (hitInfo);
+        yield break;
+    }
+
+    public void TakeHit(Vector3 point, HitMode mode)
+    {
+        if(canInteract)
+        {
+            GameObject hitInfo = Instantiate (hitInfoText, point, Quaternion.identity) as GameObject;
+            TextMesh mesh = hitInfo.GetComponent<TextMesh> ();
+            float damage = 50.0f;
+
+            switch (mode)
+            {
+                case HitMode.Head:
+                Debug.Log ("In Kopp");
+                break;
+                case HitMode.LeftInnerWing:
+                Debug.Log ("Links vom Kopp");
+                break;
+                case HitMode.LeftOutterWing:
+                Debug.Log ("Links außen");
+                break;
+                case HitMode.RightInnerWing:
+                Debug.Log ("In Rechts vom Kopp");
+                break;
+                case HitMode.RightOuterWing:
+                Debug.Log ("Rechts außen");
+                break;
+            }
+            mesh.text = "200";
+            StartCoroutine (AnimateHitInfo (hitInfo));
+
+            health -= damage;
+            if(health <= 0.0f)
+            {
+                StartCoroutine (Die ());
+            }
+        }        
+    }
 }

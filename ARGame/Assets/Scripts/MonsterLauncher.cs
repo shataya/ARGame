@@ -92,6 +92,7 @@ public class MonsterLauncher : MonoBehaviour
             ARMonster monster = monsterInstance.GetComponent<ARMonster> ();
             monster.Data = monsterDatas[id];
             monster.MonsterId = id;
+            monster.canInteract = false;
 
             MonsterData data = monster.Data;
             data.id = id;
