@@ -78,6 +78,8 @@ public class GazeInputModule : BaseInputModule
     private Vector2 lastHeadPose;
     private bool pointerDataClicked;
 
+    private bool fired = false;
+
     /// @cond HIDDEN
     public override bool ShouldActivateModule()
     {
@@ -169,8 +171,17 @@ public class GazeInputModule : BaseInputModule
             cursorImage.fillAmount = 1;
             pointerDataClicked = false;
         }
-
-        if(Input.GetKeyDown(KeyCode.L) && 
+        var allowToFire = false;
+        if(!fired && Input.GetAxis("Submit") > 0)
+        {
+            allowToFire = true;
+            fired = true;
+        } else if(Input.GetAxis("Submit") <= 0)
+        {
+            fired = false;
+        }
+        
+        if (allowToFire  && 
             pointerData != null && 
             pointerData.pointerCurrentRaycast.gameObject != null && 
             (pointerData.pointerCurrentRaycast.gameObject.layer & 8) == 8)
@@ -295,7 +306,7 @@ public class GazeInputModule : BaseInputModule
             return;
         }
         var go = pointerData.pointerCurrentRaycast.gameObject;
-        Debug.Log (go);
+
         // Send pointer up and click events.
         ExecuteEvents.Execute (pointerData.pointerPress, pointerData, ExecuteEvents.pointerUpHandler);
         ExecuteEvents.Execute (pointerData.pointerPress, pointerData, ExecuteEvents.pointerClickHandler);

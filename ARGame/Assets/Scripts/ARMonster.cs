@@ -34,7 +34,7 @@ public class ARMonster : MonoBehaviour
     public float detectionRadius = 20.0f;
     public float attackInterval = 3.0f;
     public bool canInteract = true;
-    public float health = 100.0f;
+    public float health = 10000.0f;
 
     public GameObject leftEnergyball;
     public GameObject rightEnergyball;
@@ -198,11 +198,12 @@ public class ARMonster : MonoBehaviour
         {
             GameObject hitInfo = Instantiate (hitInfoText, point, Quaternion.identity) as GameObject;
             TextMesh mesh = hitInfo.GetComponent<TextMesh> ();
-            float damage = 50.0f;
+            float damage = Random.Range(100f, 300f);
 
             switch (mode)
             {
                 case HitMode.Head:
+                    damage *= 1.5f;
                 Debug.Log ("In Kopp");
                 break;
                 case HitMode.LeftInnerWing:
@@ -218,7 +219,7 @@ public class ARMonster : MonoBehaviour
                 Debug.Log ("Rechts außen");
                 break;
             }
-            mesh.text = "200";
+            mesh.text = Mathf.Round((float)damage).ToString();
             StartCoroutine (AnimateHitInfo (hitInfo));
 
             health -= damage;
