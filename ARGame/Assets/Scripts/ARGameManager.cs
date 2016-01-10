@@ -13,17 +13,31 @@ public class ARGameManager : MonoBehaviour
     public GameObject floorBlock;
     public GameObject monsterUI;
     public Text counter;
+    public Text ownPoints;
+    public Text ownLifes;
+    public Text enemyPoints;
+    public Text enemyLifes;
+    public GameObject wonMessage;
+    public GameObject lostMessage;
     public GameObject player;
 
     public DateTime startTime;
 
     public bool started = false;
 
+    private int enemyClientId;
+
+    private Dictionary<int, PlayerStatus> playerStatusList;
+
     // Use this for initialization
     void Start()
     {
         var nd = this.gameObject.GetComponent<ARNetworkDiscovery>();
         nd.Initialize();
+        var ml = player.GetComponent<MonsterLauncher>();
+        ml.OnMonsterDied = OnEnemyMonsterDied;
+
+        playerStatusList = new Dictionary<int, PlayerStatus>();
     }
 
     // Update is called once per frame
@@ -47,6 +61,11 @@ public class ARGameManager : MonoBehaviour
         }
     }
 
+    public void OnEnemyMonsterDied(int clientId)
+    {
+        var nm = this.gameObject.GetComponent<ARNetworkManager>();
+        nm.SendMonsterKilledEvent(clientId);
+    }
 
     public void startMatch()
     {
@@ -57,6 +76,8 @@ public class ARGameManager : MonoBehaviour
         nm.StartHost();
         nm.OnStartGame = startGame;
         nm.OnMonsterDataReceived = saveMonsterData;
+        nm.OnPlayerAdded = AddPlayerToMatch;
+        nm.OnPlayerStatusUpdate = updatePlayerStatus;
 
         var nd = this.gameObject.GetComponent<ARNetworkDiscovery>();
         nd.StartAsServer();
@@ -65,7 +86,7 @@ public class ARGameManager : MonoBehaviour
         lobbyBlock.SetActive(true);
     }
 
-
+   
     public void findMatches()
     {
         var nd = this.gameObject.GetComponent<ARNetworkDiscovery>();
@@ -82,7 +103,9 @@ public class ARGameManager : MonoBehaviour
         startBlock.SetActive(false);
         lobbyBlock.SetActive(true);
         nm.OnStartGame = startGame;
+        nm.OnPlayerAdded = AddPlayerToMatch;
         nm.OnMonsterDataReceived = saveMonsterData;
+        nm.OnPlayerStatusUpdate = updatePlayerStatus;
     }
 
     public void backToLobby()
@@ -99,17 +122,26 @@ public class ARGameManager : MonoBehaviour
         monsterUI.SetActive(false);
     }
 
+    public void AddPlayerToMatch(int clientId)
+    {
+        playerStatusList.Add(clientId, new PlayerStatus());
+    }
+
     public void sendMonsterData()
     {
         var ml = player.GetComponent<MonsterLauncher>();
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
 
         var mlArr = ml.MonsterDataList;
-        nm.sendMonsterDataToServer(mlArr);
+        if(mlArr.Length==4)
+        {
+            nm.sendMonsterDataToServer(mlArr);
 
-        startBlock.SetActive(false);
-        lobbyBlock.SetActive(false);
-        monsterUI.SetActive(false);
+            startBlock.SetActive(false);
+            lobbyBlock.SetActive(false);
+            monsterUI.SetActive(false);
+        }
+       
     }
 
     public void startGame(long startTime)
@@ -126,8 +158,47 @@ public class ARGameManager : MonoBehaviour
     public void saveMonsterData(MonsterDataMessage monsterDataMessage)
     {
         var ml = player.GetComponent<MonsterLauncher>();
+        enemyClientId = monsterDataMessage.clientId;
         ml.SetEnemies(monsterDataMessage.clientId, monsterDataMessage.monsterData);
     }
 
-    
+    private void updatePlayerStatus(PlayerStatusUpdateMessage message)
+    {
+        var ps = playerStatusList[message.clientId];
+        ps.lifes = message.lifes;
+        ps.points = message.points;
+
+        if(message.clientId==enemyClientId)
+        {
+            enemyLifes.text = String.Format("{0} / 4", ps.lifes);
+            enemyLifes.text = String.Format("{0} / 2400", ps.points);
+            if(ps.lifes==0)
+            {
+                wonMessage.SetActive(true);
+            }
+            if(ps.points >= 2400)
+            {
+                lostMessage.SetActive(true);
+            }
+        } else
+        {
+            ownLifes.text = String.Format("{0} / 4", ps.lifes);
+            ownPoints.text = String.Format("{0} / 2400", ps.points);
+            if (ps.lifes == 0)
+            {
+                lostMessage.SetActive(true);
+            }
+            if(ps.points >= 2400)
+            {
+                wonMessage.SetActive(true);
+
+            }
+        }
+
+
+    }
+
+
+
+
 }

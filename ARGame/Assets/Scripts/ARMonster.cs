@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System;
 
 public enum AttackMode : int
 {
@@ -39,6 +40,8 @@ public class ARMonster : MonoBehaviour
     public GameObject leftEnergyball;
     public GameObject rightEnergyball;
     public GameObject hitInfoText;
+
+    public Action<int> OnDie;
 
 	void Awake ()
     {      
@@ -88,7 +91,7 @@ public class ARMonster : MonoBehaviour
             if (generateNewPos)
             {
                 generateNewPos = false;
-                newSlidePos = tempPos + Random.insideUnitSphere * movingRadius;
+                newSlidePos = tempPos + UnityEngine.Random.insideUnitSphere * movingRadius;
                 if (newSlidePos.y < tempPos.y)
                 {
                     newSlidePos.y = tempPos.y;
@@ -177,6 +180,8 @@ public class ARMonster : MonoBehaviour
         yield return new WaitForSeconds (1.0f);
 
         Destroy (gameObject);
+    
+        OnDie(ClientId);
     }
 
     IEnumerator AnimateHitInfo(GameObject hitInfo)
@@ -201,7 +206,7 @@ public class ARMonster : MonoBehaviour
     {
         if(canInteract)
         {            
-            float damage = Random.Range(100f, 200f);
+            float damage = UnityEngine.Random.Range(100f, 200f);
             float reducedInnerFactor = 0.75f;
             float reducedOuterFactor = 0.25f;
             switch (mode)

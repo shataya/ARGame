@@ -35,6 +35,8 @@ public class MonsterLauncher : MonoBehaviour
 
     private float monsterDetectionRadius;
 
+    public Action<int> OnMonsterDied;
+
     public MonsterData[] MonsterDataList
     {
         get
@@ -187,9 +189,11 @@ public class MonsterLauncher : MonoBehaviour
                 monsterInstance.transform.SetParent(enemy.transform);
 
                 ARMonster monster = monsterInstance.GetComponent<ARMonster> ();
+
                 monster.MonsterId = enemyMonster.id;
                 monster.Data = enemyMonster;
-
+                monster.OnDie = OnMonsterDied;
+                monster.ClientId = id;
                 enemyMonsters[id].Add (monsterInstance);
             }
         }

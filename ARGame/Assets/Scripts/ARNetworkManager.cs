@@ -12,17 +12,60 @@ public class ARNetworkManager : NetworkManager {
     private List<ARClient> clientsOnServer = new List<ARClient>();
     private List<ARClient> connectionsOnClient = new List<ARClient>();
     private ARLobbyManager lobbyManager;
+    internal Action<int> OnPlayerAdded;
+    private Dictionary<int, PlayerStatus> playerStatusList;
 
     public Action<MonsterDataMessage> OnMonsterDataReceived { get; set; }
 
     public Action<long> OnStartGame { get; set; }
 
+    public Action<PlayerStatusUpdateMessage> OnPlayerStatusUpdate;
+
+    bool gameStarted = false;
+    private DateTime startTime;
+    private DateTime lastCheck;
+
     private void Awake()
     {
         lobbyManager = GetComponent<ARLobbyManager>();
-
+        playerStatusList = new Dictionary<int, PlayerStatus>();
 
     }
+
+    private void Update()
+    {
+        if(gameStarted )
+        {
+            var now = DateTime.UtcNow;
+            var secondsPlayed = now.Subtract(startTime).TotalSeconds;
+            if(secondsPlayed >= 0)
+            {
+                if(lastCheck==null)
+                {
+                    lastCheck = now;
+                } else if(now.Subtract(lastCheck).TotalSeconds > 10)
+                {
+                    lastCheck = now;
+                    foreach(KeyValuePair<int, PlayerStatus> pair in playerStatusList)
+                    {
+                        pair.Value.points += pair.Value.lifes * 10;
+                        var ps = new PlayerStatusUpdateMessage();
+                        ps.lifes = pair.Value.lifes;
+                        ps.points = pair.Value.points;
+                        ps.clientId = pair.Key;
+                        NetworkServer.SendToAll(MyMsgType.PlayerStatusUpdate, ps);
+                    }
+
+                   
+
+                }
+            }
+            //1 Punkt pro Sekunde, pro Gegner
+
+        }
+    }
+
+  
 
     public class MyMsgType
     {
@@ -30,14 +73,41 @@ public class ARNetworkManager : NetworkManager {
         public static short ClientReady = MsgType.Highest + 2;
         public static short MonsterDataSent = MsgType.Highest + 3;
         public static short StartGame = MsgType.Highest + 4;
+        public static short MonsterKilled = MsgType.Highest + 5; 
+        public static short PlayerStatusUpdate = MsgType.Highest + 6;
     };
 
+
+    public void SendMonsterKilledEvent(int clientId)
+    {
+        MonsterKilledMessage monsterKilledMessage = new MonsterKilledMessage();
+        monsterKilledMessage.clientId = clientId;
+        client.Send(MyMsgType.MonsterKilled, monsterKilledMessage);
+
+    }
 
     public void sendMonsterDataToServer(MonsterData[] monsterData)
     {
         MonsterDataMessage monsterDataMessage = new MonsterDataMessage();
         monsterDataMessage.monsterData = monsterData;        
         client.Send(MyMsgType.MonsterDataSent, monsterDataMessage);       
+    }
+
+    public void OnServerMonsterKilledReceived(NetworkMessage netMsg)
+    {
+        MonsterKilledMessage message = netMsg.ReadMessage<MonsterKilledMessage>();
+        var ps = playerStatusList[message.clientId];
+        ps.lifes -= 1;
+        if(ps.lifes == 0)
+        {
+            //Verloren
+        }
+
+        var updateMessage = new PlayerStatusUpdateMessage();
+        updateMessage.lifes = ps.lifes;
+        updateMessage.points = ps.points;
+
+        NetworkServer.SendToAll(MyMsgType.PlayerStatusUpdate, updateMessage);
     }
 
     public void OnServerMonsterDataReceived(NetworkMessage netMsg)
@@ -66,11 +136,15 @@ public class ARNetworkManager : NetworkManager {
             var tmp = DateTime.UtcNow.AddSeconds(60);
             var timeSpan = (tmp - new DateTime(1970, 1, 1, 0, 0, 0));
             startMsg.startTime =(long)timeSpan.TotalSeconds;
+            startTime = tmp;
             NetworkServer.SendToAll(MyMsgType.StartGame,startMsg);
             Debug.Log("Starte Game");
+            gameStarted = true;
         }
 
     }
+
+   
 
     private bool checkIfAllAreReady()
     {
@@ -81,6 +155,9 @@ public class ARNetworkManager : NetworkManager {
         }
         return true;
     }
+
+
+   
 
     public void OnClientMonsterDataReceived(NetworkMessage netMsg)
     {
@@ -109,9 +186,10 @@ public class ARNetworkManager : NetworkManager {
         arclient.Ready = false;
     
         clientsOnServer.Add(arclient);
-
+        playerStatusList.Add(conn.connectionId, new PlayerStatus());
 
         conn.RegisterHandler(MyMsgType.MonsterDataSent, OnServerMonsterDataReceived);
+        conn.RegisterHandler(MyMsgType.MonsterKilled, OnServerMonsterKilledReceived);
 
         var msg = new ClientAddedMessage();
         msg.ClientConnectionId = conn.connectionId;
@@ -139,8 +217,16 @@ public class ARNetworkManager : NetworkManager {
         conn.RegisterHandler(MyMsgType.ClientReady, OnClientReady);
         conn.RegisterHandler(MyMsgType.StartGame, OnClientStartGame);
         conn.RegisterHandler(MyMsgType.MonsterDataSent, OnClientMonsterDataReceived);
+        conn.RegisterHandler(MyMsgType.PlayerStatusUpdate, OnClientPlayerStatusUpdate);
         Debug.LogFormat("Client: Player is conected - {0}", conn.connectionId);
 
+    }
+
+    private void OnClientPlayerStatusUpdate(NetworkMessage netMsg)
+    {
+
+        var updateMessage = netMsg.ReadMessage<PlayerStatusUpdateMessage>();
+        OnPlayerStatusUpdate(updateMessage);
     }
 
     private void OnClientStartGame(NetworkMessage netMsg)
@@ -160,6 +246,7 @@ public class ARNetworkManager : NetworkManager {
       
         connectionsOnClient.Add(arclient);
         lobbyManager.AddPlayer(arclient);
+        OnPlayerAdded(msg.ClientConnectionId);
         Debug.LogFormat("Client: Player is added - {0}", arclient.ClientConnectionId);
 
     }
