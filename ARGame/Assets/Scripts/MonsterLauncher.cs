@@ -32,7 +32,7 @@ public class MonsterLauncher : MonoBehaviour
 
     private List<MonsterData> monsterDatas;
 
-
+    private float monsterDetectionRadius;
 
     public MonsterData[] MonsterDataList
     {
@@ -47,6 +47,7 @@ public class MonsterLauncher : MonoBehaviour
         placedMonsters = new Dictionary<int, GameObject> ();
         enemyMonsters = new Dictionary<int, List<GameObject>> ();
         enemyGroups = new List<GameObject>();
+        monsterDetectionRadius = monsterPrefab.GetComponent<ARMonster> ().detectionRadius;
     }
 
 	// Use this for initialization
@@ -71,13 +72,11 @@ public class MonsterLauncher : MonoBehaviour
 
     public void PlaceMonster(int id)
     {
-        bool replace = false;
-        if(placedMonsters.ContainsKey(id) && placedMonsters.Count(kv => GameUtil.IsInRadius(transform.position, 10.0f, kv.Value.transform.position)) == 0)
+        if(placedMonsters.ContainsKey(id) && placedMonsters.Count(kv => GameUtil.IsInRadius(transform.position, monsterDetectionRadius, kv.Value.transform.position)) == 0)
         {
             //remove first
             Destroy(placedMonsters[id]);
             placedMonsters.Remove(id);
-            replace = true;
             
             //...??
         }

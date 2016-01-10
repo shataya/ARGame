@@ -9,8 +9,6 @@ public enum AttackMode : int
 
 public class ARMonster : MonoBehaviour
 {
-    private static readonly Vector3 CENTER_OF_SCREEN = new Vector3 (0.5f, 0.5f, 0.0f);
-
     private GameObject player;
     private new Rigidbody rigidbody;
     private Animator animator;
