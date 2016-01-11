@@ -136,6 +136,7 @@ public class ARNetworkManager : NetworkManager {
         }
 
         var updateMessage = new PlayerStatusUpdateMessage();
+        updateMessage.clientId = message.clientId;
         updateMessage.lifes = ps.lifes;
         updateMessage.points = ps.points;
 
@@ -204,8 +205,8 @@ public class ARNetworkManager : NetworkManager {
     {
         // New Player connected
         base.OnServerConnect(conn);
-
-        foreach(var client in clientsOnServer)
+       
+        foreach (var client in clientsOnServer)
         {
             var tmpmsg = new ClientAddedMessage();
             tmpmsg.ClientConnectionId = client.ClientConnectionId;
@@ -257,6 +258,7 @@ public class ARNetworkManager : NetworkManager {
         conn.RegisterHandler(MyMsgType.StartGame, OnClientStartGame);
         conn.RegisterHandler(MyMsgType.MonsterDataSent, OnClientMonsterDataReceived);
         conn.RegisterHandler(MyMsgType.PlayerStatusUpdate, OnClientPlayerStatusUpdate);
+      
         Debug.LogFormat("Client: Player is conected - {0}", conn.connectionId);
 
     }

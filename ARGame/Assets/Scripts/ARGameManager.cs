@@ -70,7 +70,7 @@ public class ARGameManager : MonoBehaviour
             {
                 lastCheck = now;
             }
-            else if (now.Subtract(lastCheck).TotalSeconds > 30)
+            else if (now.Subtract(lastCheck).TotalSeconds > 40)
             {
                 lastCheck = now;
                 var nm = this.gameObject.GetComponent<ARNetworkManager>();
@@ -104,7 +104,7 @@ public class ARGameManager : MonoBehaviour
 
         startBlock.SetActive(false);
         lobbyBlock.SetActive(true);
-        joined = true;
+      //  joined = true;
     }
 
    
