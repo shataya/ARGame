@@ -61,6 +61,7 @@ public class MonsterLauncher : MonoBehaviour
         {
             monsterDatas.Add(new MonsterData());
         }
+        Debug.Log("Monster Data Init");
     }
 	
 	// Update is called once per frame

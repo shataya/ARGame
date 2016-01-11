@@ -11,7 +11,7 @@ public class ARGameManager : MonoBehaviour
     public GameObject startBlock;
     public GameObject lobbyBlock;
     public GameObject floorBlock;
-    public GameObject monsterUI;
+ 
     public Text counter;
     public Text ownPoints;
     public Text ownLifes;
@@ -112,14 +112,14 @@ public class ARGameManager : MonoBehaviour
     {
         lobbyBlock.SetActive(true);
         floorBlock.SetActive(false);
-        monsterUI.SetActive(true);
+      
     }
 
     public void placeSoldiers()
     {
         lobbyBlock.SetActive(false);
         floorBlock.SetActive(true);
-        monsterUI.SetActive(false);
+       
     }
 
     public void AddPlayerToMatch(int clientId)
@@ -139,7 +139,7 @@ public class ARGameManager : MonoBehaviour
 
             startBlock.SetActive(false);
             lobbyBlock.SetActive(false);
-            monsterUI.SetActive(false);
+           
         }
        
     }
