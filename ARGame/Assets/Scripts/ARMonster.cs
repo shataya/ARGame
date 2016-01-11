@@ -30,10 +30,10 @@ public class ARMonster : MonoBehaviour
     public MonsterData Data { get; set; }
 
     public float positionReachThreshold = 0.5f;
-    public float speed = 2000.0f;
+    public float speed = 400.0f;
     public float movingRadius = 10.0f;
     public float detectionRadius = 20.0f;
-    public float attackInterval = 3.0f;
+    public float attackInterval = 2.0f;
     public bool canInteract = true;
     public float health = 10000.0f;
 

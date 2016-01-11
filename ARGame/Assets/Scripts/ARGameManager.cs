@@ -171,7 +171,7 @@ public class ARGameManager : MonoBehaviour
         if(message.clientId==enemyClientId)
         {
             enemyLifes.text = String.Format("{0} / 4", ps.lifes);
-            enemyLifes.text = String.Format("{0} / 2400", ps.points);
+            enemyPoints.text = String.Format("{0} / 2400", ps.points);
             if(ps.lifes==0)
             {
                 wonMessage.SetActive(true);
