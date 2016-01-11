@@ -155,7 +155,7 @@ public class ARMonster : MonoBehaviour
         GameObject ball = null;
         AttackMode attackMode = (AttackMode)mode;
 
-        switch(attackMode)
+        switch (attackMode)
         {
             case AttackMode.Left:
             ball = Instantiate (leftEnergyball, leftEnergyball.transform.position, leftEnergyball.transform.rotation) as GameObject;
@@ -165,7 +165,7 @@ public class ARMonster : MonoBehaviour
             break;
         }
 
-        if(ball != null)
+        if (ball != null)
         {
             EnergyBall eb = ball.GetComponent<EnergyBall> ();
             eb.playerDir = player.transform.position;

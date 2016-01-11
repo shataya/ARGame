@@ -29,6 +29,7 @@ public class EnergyBall : MonoBehaviour
 
     void Update()
     {
+        
         transform.position = Vector3.Lerp (transform.position, target, Time.deltaTime * speed);
 
         if(Time.time > time + 5.0f)
