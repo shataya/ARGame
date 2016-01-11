@@ -204,6 +204,7 @@ public class ARMonster : MonoBehaviour
 
     public void TakeHit(Vector3 point, HitMode mode)
     {
+        Debug.Log("Take Hit!");
         if(canInteract)
         {            
             float damage = UnityEngine.Random.Range(100f, 200f);

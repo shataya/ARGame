@@ -26,6 +26,8 @@ public class ARGameManager : MonoBehaviour
     public bool started = false;
 
     private int enemyClientId;
+    private DateTime lastCheck;
+    private bool joined = false;
 
     private Dictionary<int, PlayerStatus> playerStatusList;
 
@@ -59,6 +61,24 @@ public class ARGameManager : MonoBehaviour
 
             }
         }
+
+        if(joined)
+        {
+            var now = DateTime.UtcNow;
+
+            if (lastCheck == null)
+            {
+                lastCheck = now;
+            }
+            else if (now.Subtract(lastCheck).TotalSeconds > 30)
+            {
+                lastCheck = now;
+                var nm = this.gameObject.GetComponent<ARNetworkManager>();
+                nm.SendKeepAliveMessage();
+            }
+        }
+    
+           
     }
 
     public void OnEnemyMonsterDied(int clientId)
@@ -84,6 +104,7 @@ public class ARGameManager : MonoBehaviour
 
         startBlock.SetActive(false);
         lobbyBlock.SetActive(true);
+        joined = true;
     }
 
    
@@ -106,6 +127,7 @@ public class ARGameManager : MonoBehaviour
         nm.OnPlayerAdded = AddPlayerToMatch;
         nm.OnMonsterDataReceived = saveMonsterData;
         nm.OnPlayerStatusUpdate = updatePlayerStatus;
+        joined = true;
     }
 
     public void backToLobby()

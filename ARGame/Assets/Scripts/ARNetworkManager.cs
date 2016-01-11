@@ -24,6 +24,7 @@ public class ARNetworkManager : NetworkManager {
     bool gameStarted = false;
     private DateTime startTime;
     private DateTime lastCheck;
+    bool gameFinish = false;
 
     private void Awake()
     {
@@ -34,7 +35,7 @@ public class ARNetworkManager : NetworkManager {
 
     private void Update()
     {
-        if(gameStarted )
+        if(gameStarted && !gameFinish)
         {
             var now = DateTime.UtcNow;
             var secondsPlayed = now.Subtract(startTime).TotalSeconds;
@@ -53,19 +54,32 @@ public class ARNetworkManager : NetworkManager {
                         ps.lifes = pair.Value.lifes;
                         ps.points = pair.Value.points;
                         ps.clientId = pair.Key;
+                        if(ps.points >= 2400)
+                        {
+                            gameFinish = true;
+                        }
                         NetworkServer.SendToAll(MyMsgType.PlayerStatusUpdate, ps);
                     }
 
                    
 
                 }
-            }
+            } 
+          
+        }
             //1 Punkt pro Sekunde, pro Gegner
 
-        }
+ 
     }
 
-  
+    internal void SendKeepAliveMessage()
+    {
+        if(client!=null && client.isConnected)
+        {
+            client.Send(MyMsgType.KeepAlive, new KeepAliveMessage());
+        }
+       
+    }
 
     public class MyMsgType
     {
@@ -75,7 +89,9 @@ public class ARNetworkManager : NetworkManager {
         public static short StartGame = MsgType.Highest + 4;
         public static short MonsterKilled = MsgType.Highest + 5; 
         public static short PlayerStatusUpdate = MsgType.Highest + 6;
-    };
+        public static short PlayerKilled = MsgType.Highest + 7;
+         public static short KeepAlive = MsgType.Highest + 8;
+};
 
 
     public void SendMonsterKilledEvent(int clientId)
@@ -86,6 +102,15 @@ public class ARNetworkManager : NetworkManager {
 
     }
 
+
+    public void SendPlayerKilledEvent(int clientId)
+    {
+        PlayerKilledMessage killMessage = new PlayerKilledMessage();
+        killMessage.clientId = clientId;
+        client.Send(MyMsgType.PlayerKilled, killMessage);
+
+    }
+
     public void sendMonsterDataToServer(MonsterData[] monsterData)
     {
         MonsterDataMessage monsterDataMessage = new MonsterDataMessage();
@@ -93,6 +118,12 @@ public class ARNetworkManager : NetworkManager {
         client.Send(MyMsgType.MonsterDataSent, monsterDataMessage);       
     }
 
+    public void OnServerPlayerKilledReceived(NetworkMessage netMsg)
+    {
+        PlayerKilledMessage message = netMsg.ReadMessage<PlayerKilledMessage>();
+        var ps = playerStatusList[message.clientId];
+        ps.points -= 120;
+    }
     public void OnServerMonsterKilledReceived(NetworkMessage netMsg)
     {
         MonsterKilledMessage message = netMsg.ReadMessage<MonsterKilledMessage>();
@@ -100,7 +131,8 @@ public class ARNetworkManager : NetworkManager {
         ps.lifes -= 1;
         if(ps.lifes == 0)
         {
-            //Verloren
+            ps.points = -1000;
+            gameFinish = true;
         }
 
         var updateMessage = new PlayerStatusUpdateMessage();
@@ -133,7 +165,7 @@ public class ARNetworkManager : NetworkManager {
         {
             // Send Start Game
             var startMsg = new StartGameMessage();
-            var tmp = DateTime.UtcNow.AddSeconds(60);
+            var tmp = DateTime.UtcNow.AddSeconds(30);
             var timeSpan = (tmp - new DateTime(1970, 1, 1, 0, 0, 0));
             startMsg.startTime =(long)timeSpan.TotalSeconds;
             startTime = tmp;
@@ -190,6 +222,8 @@ public class ARNetworkManager : NetworkManager {
 
         conn.RegisterHandler(MyMsgType.MonsterDataSent, OnServerMonsterDataReceived);
         conn.RegisterHandler(MyMsgType.MonsterKilled, OnServerMonsterKilledReceived);
+        conn.RegisterHandler(MyMsgType.PlayerKilled, OnServerPlayerKilledReceived);
+        conn.RegisterHandler(MyMsgType.KeepAlive, OnServerPlayerKeepAlive);
 
         var msg = new ClientAddedMessage();
         msg.ClientConnectionId = conn.connectionId;
@@ -197,6 +231,11 @@ public class ARNetworkManager : NetworkManager {
    
         Debug.LogFormat("Server: Player is connected - {0}", msg.ClientConnectionId);
 
+    }
+
+    private void OnServerPlayerKeepAlive(NetworkMessage netMsg)
+    {
+       //SPieler lebt
     }
 
     private void OnServerReady(NetworkMessage netMsg)

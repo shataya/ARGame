@@ -92,7 +92,7 @@ public class MonsterLauncher : MonoBehaviour
             ARMonster monster = monsterInstance.GetComponent<ARMonster> ();
             monster.Data = monsterDatas[id];
             monster.MonsterId = id;
-            monster.canInteract = false;
+          
 
             MonsterData data = monster.Data;
             data.id = id;
@@ -187,7 +187,7 @@ public class MonsterLauncher : MonoBehaviour
             {
                 GameObject monsterInstance = Instantiate (monsterPrefab, new Vector3(enemyMonster.posX, enemyMonster.posY, enemyMonster.posZ), new Quaternion(enemyMonster.rotX, enemyMonster.rotY, enemyMonster.rotZ, enemyMonster.rotW)) as GameObject;
                 monsterInstance.name = string.Format ("Monster Id: {0}", enemyMonster.id);
-                monsterInstance.transform.SetParent(enemy.transform);
+                //monsterInstance.transform.SetParent(enemy.transform);
 
                 ARMonster monster = monsterInstance.GetComponent<ARMonster> ();
 
