@@ -20,6 +20,7 @@ public class ARGameManager : MonoBehaviour
     public GameObject wonMessage;
     public GameObject lostMessage;
     public GameObject player;
+    public GameObject hud;
 
     public DateTime startTime;
 
@@ -190,6 +191,8 @@ public class ARGameManager : MonoBehaviour
 
 
             this.started = true;
+
+            hud.SetActive(true);
         }
       
     }
