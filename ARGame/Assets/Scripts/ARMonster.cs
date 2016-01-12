@@ -24,6 +24,8 @@ public class ARMonster : MonoBehaviour
     private int attackHash = Animator.StringToHash ("Attack");
     private int blockHash = Animator.StringToHash ("Block");
     private float nextAttack = 0.0f;
+    private float nextRegeneration = 0.0f;
+    private float completeHealth;
 
     public int MonsterId { get; set; }
     public int ClientId { get; set; }
@@ -33,9 +35,12 @@ public class ARMonster : MonoBehaviour
     public float speed = 400.0f;
     public float movingRadius = 10.0f;
     public float detectionRadius = 20.0f;
-    public float attackInterval = 2.0f;
+    public float attackInterval = 0.5f;
     public bool canInteract = true;
-    public float health = 10000.0f;
+
+    public float basicHealth = 10000.0f;
+    public float currentHealth;
+    public float baseAttackPower = 5.0f;
 
     public GameObject leftEnergyball;
     public GameObject rightEnergyball;
@@ -62,7 +67,10 @@ public class ARMonster : MonoBehaviour
         if(canInteract)
         {
             rigidbody = gameObject.AddComponent<Rigidbody> ();
-        }            
+        }
+
+        completeHealth = basicHealth + Data.defenseValue * 100.0f;
+        currentHealth = completeHealth;
     }
 	
 	// Update is called once per frame
@@ -78,6 +86,18 @@ public class ARMonster : MonoBehaviour
                 {
                     nextAttack = Time.time + attackInterval;
                     Attack ();
+                }
+            }
+            else
+            {
+                if (currentHealth <= completeHealth)
+                {
+                    // Regeneriere
+                    currentHealth = Mathf.Lerp (currentHealth, completeHealth, 0.25f * Time.deltaTime);
+                    if (currentHealth > completeHealth)
+                    {
+                        currentHealth = completeHealth;
+                    }
                 }
             }
         }              
@@ -168,8 +188,8 @@ public class ARMonster : MonoBehaviour
         if (ball != null)
         {
             EnergyBall eb = ball.GetComponent<EnergyBall> ();
-            eb.playerDir = player.transform.position;
-            eb.damage = Data.attackValue / 2.0f;
+            eb.playerDir = UnityEngine.Random.Range (0.0f, 1.0f) < 0.5f ? player.transform.position : transform.forward * 20.0f;
+            eb.damage = baseAttackPower + Data.attackValue / 2.0f;
             ball.SetActive (true);
         }
     }
@@ -204,8 +224,7 @@ public class ARMonster : MonoBehaviour
 
     public void TakeHit(Vector3 point, HitMode mode)
     {
-        Debug.Log("Take Hit!");
-        if(canInteract)
+        if(canInteract && canSeePlayer)
         {            
             float damage = UnityEngine.Random.Range(100f, 200f);
             float reducedInnerFactor = 0.75f;
@@ -221,14 +240,16 @@ public class ARMonster : MonoBehaviour
                 damage *= reducedOuterFactor;
                 break;
             }
-            health -= damage;
-            if (health <= 0.0f)
+            currentHealth -= damage;
+            if (currentHealth <= 0.0f)
             {
                 StartCoroutine (Die ());
             }
             else
             {
-                GameObject hitInfo = Instantiate (hitInfoText, point, Quaternion.identity) as GameObject;
+                Vector3 rot = transform.rotation.eulerAngles;
+                rot.y += 180.0f;
+                GameObject hitInfo = Instantiate (hitInfoText, point, Quaternion.Euler(rot)) as GameObject;
                 TextMesh mesh = hitInfo.GetComponent<TextMesh> ();
                 mesh.text = Mathf.Round ((float)damage).ToString ();
                 StartCoroutine (AnimateHitInfo (hitInfo));

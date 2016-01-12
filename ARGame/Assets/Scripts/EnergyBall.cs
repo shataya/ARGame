@@ -13,7 +13,7 @@ public class EnergyBall : MonoBehaviour
     [HideInInspector]
     public float damage;
 
-    public float speed = 0.1f;
+    public float speed = 0.025f;
 
     void Awake()
     {
@@ -22,15 +22,12 @@ public class EnergyBall : MonoBehaviour
 
     void Start()
     {
-        origin = transform.position - Vector3.up;
-        target = (playerDir - origin).normalized * 20.0f;
         time = Time.time;
     }
 
     void Update()
-    {
-        
-        transform.position = Vector3.Lerp (transform.position, target, Time.deltaTime * speed);
+    {        
+        transform.position = Vector3.Lerp (transform.position, playerDir, Time.deltaTime * speed);
 
         if(Time.time > time + 5.0f)
         {
