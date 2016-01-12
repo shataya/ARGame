@@ -77,6 +77,7 @@ public class ARNetworkManager : NetworkManager {
         if(client!=null && client.isConnected)
         {
             client.Send(MyMsgType.KeepAlive, new KeepAliveMessage());
+            Debug.Log("Send Keep Alive");
         }
        
     }
@@ -205,32 +206,49 @@ public class ARNetworkManager : NetworkManager {
     {
         // New Player connected
         base.OnServerConnect(conn);
-       
-        foreach (var client in clientsOnServer)
+        if(!playerStatusList.ContainsKey(conn.connectionId))
         {
-            var tmpmsg = new ClientAddedMessage();
-            tmpmsg.ClientConnectionId = client.ClientConnectionId;
-            NetworkServer.SendToClient(conn.connectionId, MyMsgType.ClientAdded, tmpmsg);
-        }
+            foreach (var client in clientsOnServer)
+            {
+                Debug.Log("Schicke bereits verbundene Clients!");
+                var tmpmsg = new ClientAddedMessage();
+                tmpmsg.ClientConnectionId = client.ClientConnectionId;
+                NetworkServer.SendToClient(conn.connectionId, MyMsgType.ClientAdded, tmpmsg);
+            }
 
-     
-        var arclient = new ARClient();
-        arclient.ClientConnectionId = conn.connectionId;
-        arclient.Ready = false;
+
+            var arclient = new ARClient();
+            arclient.ClientConnectionId = conn.connectionId;
+            arclient.Ready = false;
+
+            clientsOnServer.Add(arclient);
+            playerStatusList.Add(conn.connectionId, new PlayerStatus());
+
+            conn.RegisterHandler(MyMsgType.MonsterDataSent, OnServerMonsterDataReceived);
+            conn.RegisterHandler(MyMsgType.MonsterKilled, OnServerMonsterKilledReceived);
+            conn.RegisterHandler(MyMsgType.PlayerKilled, OnServerPlayerKilledReceived);
+            Debug.Log("Set Keep Alive Handler");
+            conn.RegisterHandler(MyMsgType.KeepAlive, OnServerPlayerKeepAlive);
+            conn.RegisterHandler(MyMsgType.ClientAdded, OnServerPlayerIsSuccessfullyConnected);
+
+            Debug.LogFormat("Ist Connected? {0}", conn.isConnected);
+
+
+
+            Debug.LogFormat("Server: Player is connected - {0}", conn.connectionId);
+        } 
+       
     
-        clientsOnServer.Add(arclient);
-        playerStatusList.Add(conn.connectionId, new PlayerStatus());
 
-        conn.RegisterHandler(MyMsgType.MonsterDataSent, OnServerMonsterDataReceived);
-        conn.RegisterHandler(MyMsgType.MonsterKilled, OnServerMonsterKilledReceived);
-        conn.RegisterHandler(MyMsgType.PlayerKilled, OnServerPlayerKilledReceived);
-        conn.RegisterHandler(MyMsgType.KeepAlive, OnServerPlayerKeepAlive);
+    }
 
+    private void OnServerPlayerIsSuccessfullyConnected(NetworkMessage netMsg)
+    {
         var msg = new ClientAddedMessage();
-        msg.ClientConnectionId = conn.connectionId;
+        msg.ClientConnectionId = netMsg.conn.connectionId;
         NetworkServer.SendToAll(MyMsgType.ClientAdded, msg);
-   
-        Debug.LogFormat("Server: Player is connected - {0}", msg.ClientConnectionId);
+
+        Debug.LogFormat("Server send Info: Player is connected - {0}", msg.ClientConnectionId);
 
     }
 
@@ -261,6 +279,7 @@ public class ARNetworkManager : NetworkManager {
       
         Debug.LogFormat("Client: Player is conected - {0}", conn.connectionId);
 
+        client.Send(MyMsgType.ClientAdded, new ClientAddedMessage());
     }
 
     private void OnClientPlayerStatusUpdate(NetworkMessage netMsg)
@@ -279,17 +298,31 @@ public class ARNetworkManager : NetworkManager {
 
     public void OnClientAdded(NetworkMessage netMsg)
     {
-        // Player is added
         var msg = netMsg.ReadMessage<ClientAddedMessage>();
         var arclient = new ARClient();
         arclient.ClientConnectionId = msg.ClientConnectionId;
-        arclient.Ready = false;       
-      
-        connectionsOnClient.Add(arclient);
-        lobbyManager.AddPlayer(arclient);
-        OnPlayerAdded(msg.ClientConnectionId);
-        Debug.LogFormat("Client: Player is added - {0}", arclient.ClientConnectionId);
+        arclient.Ready = false;
+        bool already = false;
+        // Player is added
+        foreach (var tmpclient in connectionsOnClient)
+        {
+            if(tmpclient.ClientConnectionId == arclient.ClientConnectionId)
+            {
+                already = true;
+            }
+        }
+       
+        if(!already)
+        {
+            Debug.LogFormat("Client: Player is added - {0}", arclient.ClientConnectionId);
 
+
+            connectionsOnClient.Add(arclient);
+            lobbyManager.AddPlayer(arclient);
+            OnPlayerAdded(msg.ClientConnectionId);
+        }
+      
+        
     }
 
 

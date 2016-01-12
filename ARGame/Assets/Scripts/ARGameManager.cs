@@ -31,6 +31,7 @@ public class ARGameManager : MonoBehaviour
 
     private Dictionary<int, PlayerStatus> playerStatusList;
 
+    
     // Use this for initialization
     void Start()
     {
@@ -75,6 +76,7 @@ public class ARGameManager : MonoBehaviour
                 lastCheck = now;
                 var nm = this.gameObject.GetComponent<ARNetworkManager>();
                 nm.SendKeepAliveMessage();
+                
             }
         }
     
@@ -93,24 +95,29 @@ public class ARGameManager : MonoBehaviour
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
         nm.logLevel = LogFilter.FilterLevel.Info;
         nm.networkPort = 7777;
-        nm.StartHost();
+      
         nm.OnStartGame = startGame;
         nm.OnMonsterDataReceived = saveMonsterData;
         nm.OnPlayerAdded = AddPlayerToMatch;
         nm.OnPlayerStatusUpdate = updatePlayerStatus;
 
         var nd = this.gameObject.GetComponent<ARNetworkDiscovery>();
-        nd.StartAsServer();
+       
 
         startBlock.SetActive(false);
         lobbyBlock.SetActive(true);
-      //  joined = true;
+        nm.StartHost();
+        nd.StartAsServer();
+        joined = true;
+
     }
 
    
     public void findMatches()
     {
+        
         var nd = this.gameObject.GetComponent<ARNetworkDiscovery>();
+      
         nd.StartAsClient();
     }
 
@@ -146,7 +153,11 @@ public class ARGameManager : MonoBehaviour
 
     public void AddPlayerToMatch(int clientId)
     {
-        playerStatusList.Add(clientId, new PlayerStatus());
+        if(!playerStatusList.ContainsKey(clientId))
+        {
+            playerStatusList.Add(clientId, new PlayerStatus());
+        }
+       
     }
 
     public void sendMonsterData()
@@ -168,13 +179,17 @@ public class ARGameManager : MonoBehaviour
 
     public void startGame(long startTime)
     {
-        Debug.LogFormat("Starte Game mit Counter {0}", startTime);
-        counter.gameObject.SetActive(true);
-        System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-        this.startTime = dtDateTime.AddSeconds(startTime).ToUniversalTime();
-   
+        if(!started)
+        {
+            Debug.LogFormat("Starte Game mit Counter {0}", startTime);
+            counter.gameObject.SetActive(true);
+            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            this.startTime = dtDateTime.AddSeconds(startTime).ToUniversalTime();
 
-        this.started = true;
+
+            this.started = true;
+        }
+      
     }
 
     public void saveMonsterData(MonsterDataMessage monsterDataMessage)

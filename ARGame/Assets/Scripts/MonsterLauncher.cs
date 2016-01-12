@@ -115,7 +115,7 @@ public class MonsterLauncher : MonoBehaviour
         }        
         else
         {
-            Debug.LogError ("Monster konnte nicht platziert werden. Entweder bereits gesetzt oder der aktuelle Punkt ist zu nah an einem anderen.");
+          //  Debug.LogError ("Monster konnte nicht platziert werden. Entweder bereits gesetzt oder der aktuelle Punkt ist zu nah an einem anderen.");
             // TODO: Irgendwas ausgeben
         }
     }
@@ -179,14 +179,12 @@ public class MonsterLauncher : MonoBehaviour
         if(!enemyMonsters.ContainsKey(id))
         {
             enemyMonsters.Add (id, new List<GameObject> ());
-            GameObject enemy = new GameObject (string.Format ("Enemy Id: {0}", id));
-            enemy.SetActive (false);
-            enemyGroups.Add(enemy);
 
             foreach(var enemyMonster in data)
             {
                 GameObject monsterInstance = Instantiate (monsterPrefab, new Vector3(enemyMonster.posX, enemyMonster.posY, enemyMonster.posZ), new Quaternion(enemyMonster.rotX, enemyMonster.rotY, enemyMonster.rotZ, enemyMonster.rotW)) as GameObject;
                 monsterInstance.name = string.Format ("Monster Id: {0}", enemyMonster.id);
+                monsterInstance.SetActive(false);
                 //monsterInstance.transform.SetParent(enemy.transform);
 
                 ARMonster monster = monsterInstance.GetComponent<ARMonster> ();
@@ -207,9 +205,13 @@ public class MonsterLauncher : MonoBehaviour
             ownMonster.Value.SetActive (false);
         }
 
-        foreach (var enemy in enemyGroups)
+        foreach (var enemygroup in enemyMonsters)
         {
-            enemy.SetActive(true);
+            foreach (var enemy in enemygroup.Value)
+            {
+                enemy.SetActive(true);
+            }
+                
         }
     }
 }
