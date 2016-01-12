@@ -48,6 +48,8 @@ public class ARMonster : MonoBehaviour
 
     public Action<int> OnDie;
 
+    private AudioSource hitSound;
+
 	void Awake ()
     {      
         Data = new MonsterData ();
@@ -71,6 +73,16 @@ public class ARMonster : MonoBehaviour
 
         completeHealth = basicHealth + Data.defenseValue * 100.0f;
         currentHealth = completeHealth;
+
+        var audioComp = GetComponent<AudioSource>();
+        if (!canInteract)
+        {
+            audioComp.Play();
+        }
+        else if(canInteract)
+        {
+            hitSound = audioComp;
+        }
     }
 	
 	// Update is called once per frame
@@ -247,6 +259,7 @@ public class ARMonster : MonoBehaviour
             }
             else
             {
+                hitSound.Play();
                 Vector3 rot = transform.rotation.eulerAngles;
                 rot.y += 180.0f;
                 GameObject hitInfo = Instantiate (hitInfoText, point, Quaternion.Euler(rot)) as GameObject;
@@ -254,6 +267,8 @@ public class ARMonster : MonoBehaviour
                 mesh.text = Mathf.Round ((float)damage).ToString ();
                 StartCoroutine (AnimateHitInfo (hitInfo));
             }     
+
+
         }        
     }
 }

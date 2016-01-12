@@ -49,7 +49,7 @@ public class ARNetworkManager : NetworkManager {
                     lastCheck = now;
                     foreach(KeyValuePair<int, PlayerStatus> pair in playerStatusList)
                     {
-                        pair.Value.points += pair.Value.lifes * 10;
+                        pair.Value.points += pair.Value.lifes * 15;
                         var ps = new PlayerStatusUpdateMessage();
                         ps.lifes = pair.Value.lifes;
                         ps.points = pair.Value.points;
@@ -104,10 +104,10 @@ public class ARNetworkManager : NetworkManager {
     }
 
 
-    public void SendPlayerKilledEvent(int clientId)
+    public void SendPlayerKilledEvent()
     {
         PlayerKilledMessage killMessage = new PlayerKilledMessage();
-        killMessage.clientId = clientId;
+      
         client.Send(MyMsgType.PlayerKilled, killMessage);
 
     }
@@ -122,7 +122,7 @@ public class ARNetworkManager : NetworkManager {
     public void OnServerPlayerKilledReceived(NetworkMessage netMsg)
     {
         PlayerKilledMessage message = netMsg.ReadMessage<PlayerKilledMessage>();
-        var ps = playerStatusList[message.clientId];
+        var ps = playerStatusList[netMsg.conn.connectionId];
         ps.points -= 120;
     }
     public void OnServerMonsterKilledReceived(NetworkMessage netMsg)
@@ -278,6 +278,7 @@ public class ARNetworkManager : NetworkManager {
         conn.RegisterHandler(MyMsgType.PlayerStatusUpdate, OnClientPlayerStatusUpdate);
       
         Debug.LogFormat("Client: Player is conected - {0}", conn.connectionId);
+     
 
         client.Send(MyMsgType.ClientAdded, new ClientAddedMessage());
     }

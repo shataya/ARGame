@@ -32,6 +32,8 @@ public class ARGameManager : MonoBehaviour
     private Dictionary<int, PlayerStatus> playerStatusList;
 
     
+
+
     // Use this for initialization
     void Start()
     {
@@ -117,7 +119,7 @@ public class ARGameManager : MonoBehaviour
     {
         
         var nd = this.gameObject.GetComponent<ARNetworkDiscovery>();
-      
+        nd.Initialize();
         nd.StartAsClient();
     }
 
@@ -232,6 +234,14 @@ public class ARGameManager : MonoBehaviour
             }
         }
 
+
+    }
+
+
+    public void playerDie()
+    {
+        var nm = this.gameObject.GetComponent<ARNetworkManager>();
+        nm.SendPlayerKilledEvent();
 
     }
 
