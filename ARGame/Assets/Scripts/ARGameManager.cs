@@ -62,7 +62,7 @@ public class ARGameManager : MonoBehaviour
                 counter.gameObject.SetActive(false);
                 var ml = player.GetComponent<MonsterLauncher>();
                 ml.ActivateEnemies();
-                transform.position = GetComponent<Player> ().spawnPoint;
+               // transform.position = GetComponent<Player> ().spawnPoint;
             }
         }
 
@@ -70,7 +70,7 @@ public class ARGameManager : MonoBehaviour
         {
             var now = DateTime.UtcNow;
 
-            if (now.Subtract(lastCheck).TotalSeconds > 40)
+            if (now.Subtract(lastCheck).TotalSeconds > 15)
             {
                 lastCheck = now;
                 var nm = this.gameObject.GetComponent<ARNetworkManager>();
@@ -122,9 +122,11 @@ public class ARGameManager : MonoBehaviour
     public void joinMatch(int match)
     {
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
-        nm.networkAddress = GetComponent<ARNetworkDiscoveryHandler>().DropdownMatches.options[match].text;
-        nm.networkPort = 7777;
-        nm.StartClient();
+       
+        var networkAddress = GetComponent<ARNetworkDiscoveryHandler>().DropdownMatches.options[match].text;
+        var networkPort = 7777;
+        nm.StartClientWithCache(networkAddress, networkPort);
+       
         startBlock.SetActive(false);
         lobbyBlock.SetActive(true);
         nm.OnStartGame = startGame;

@@ -25,6 +25,7 @@ public class ARNetworkManager : NetworkManager {
     private DateTime startTime;
     private DateTime lastCheck;
     bool gameFinish = false;
+    private NetworkClient cachedClient;
 
     private void Awake()
     {
@@ -112,8 +113,20 @@ public class ARNetworkManager : NetworkManager {
     public void sendMonsterDataToServer(MonsterData[] monsterData)
     {
         MonsterDataMessage monsterDataMessage = new MonsterDataMessage();
-        monsterDataMessage.monsterData = monsterData;        
+        monsterDataMessage.monsterData = monsterData;
+        if(client==null)
+        {
+            client = StartClient();
+        }        
         client.Send(MyMsgType.MonsterDataSent, monsterDataMessage);       
+    }
+
+    internal void StartClientWithCache(string networkAddress, int networkPort)
+    {
+        this.networkAddress = networkAddress;
+        this.networkPort = networkPort;
+
+        cachedClient = this.StartClient();
     }
 
     public void OnServerPlayerKilledReceived(NetworkMessage netMsg)
