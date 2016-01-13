@@ -14,6 +14,7 @@ public class ARMonster : MonoBehaviour
     private GameObject player;
     private new Rigidbody rigidbody;
     private Animator animator;
+    private AudioSource hitSound;
 
     private bool canSeePlayer;
     private bool generateNewPos = true;
@@ -24,8 +25,9 @@ public class ARMonster : MonoBehaviour
     private int attackHash = Animator.StringToHash ("Attack");
     private int blockHash = Animator.StringToHash ("Block");
     private float nextAttack = 0.0f;
-    private float nextRegeneration = 0.0f;
     private float completeHealth;
+    private int attackCounter = 0;
+    private bool isBlocking;
 
     public int MonsterId { get; set; }
     public int ClientId { get; set; }
@@ -41,14 +43,13 @@ public class ARMonster : MonoBehaviour
     public float basicHealth = 10000.0f;
     public float currentHealth;
     public float baseAttackPower = 5.0f;
+    public int blockAfterXAttacks = 3;
 
     public GameObject leftEnergyball;
     public GameObject rightEnergyball;
     public GameObject hitInfoText;
 
     public Action<int> OnDie;
-
-    private AudioSource hitSound;
 
 	void Awake ()
     {      
@@ -97,7 +98,19 @@ public class ARMonster : MonoBehaviour
                 if (Time.time > nextAttack)
                 {
                     nextAttack = Time.time + attackInterval;
-                    Attack ();
+                    attackCounter += 1;
+
+                    if(attackCounter != blockAfterXAttacks + 1)
+                    {
+                        isBlocking = false;
+                        Attack ();
+                    }
+                    else
+                    {
+                        Block ();
+                        isBlocking = true;
+                        attackCounter = 0;
+                    }                    
                 }
             }
             else
@@ -182,6 +195,11 @@ public class ARMonster : MonoBehaviour
         animator.SetBool (attackHash, true);
     }
 
+    void Block()
+    {
+        animator.SetBool (blockHash, true);
+    }
+
     void Shoot(int mode)
     {
         GameObject ball = null;
@@ -252,7 +270,12 @@ public class ARMonster : MonoBehaviour
                 damage *= reducedOuterFactor;
                 break;
             }
-            currentHealth -= damage;
+
+            if(!isBlocking)
+            {
+                currentHealth -= damage;
+            }
+            
             if (currentHealth <= 0.0f)
             {
                 StartCoroutine (Die ());
@@ -264,11 +287,9 @@ public class ARMonster : MonoBehaviour
                 rot.y += 180.0f;
                 GameObject hitInfo = Instantiate (hitInfoText, point, Quaternion.Euler(rot)) as GameObject;
                 TextMesh mesh = hitInfo.GetComponent<TextMesh> ();
-                mesh.text = Mathf.Round ((float)damage).ToString ();
+                mesh.text = isBlocking ? "BLOCK" : Mathf.Round ((float)damage).ToString ();
                 StartCoroutine (AnimateHitInfo (hitInfo));
-            }     
-
-
+            }
         }        
     }
 }

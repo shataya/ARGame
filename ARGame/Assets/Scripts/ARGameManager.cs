@@ -70,16 +70,11 @@ public class ARGameManager : MonoBehaviour
         {
             var now = DateTime.UtcNow;
 
-            if (lastCheck == null)
-            {
-                lastCheck = now;
-            }
-            else if (now.Subtract(lastCheck).TotalSeconds > 40)
+            if (now.Subtract(lastCheck).TotalSeconds > 40)
             {
                 lastCheck = now;
                 var nm = this.gameObject.GetComponent<ARNetworkManager>();
-                nm.SendKeepAliveMessage();
-                
+                nm.SendKeepAliveMessage();                
             }
         }
     
@@ -232,11 +227,8 @@ public class ARGameManager : MonoBehaviour
             if(ps.points >= 2400)
             {
                 wonMessage.SetActive(true);
-
             }
         }
-
-
     }
 
 
@@ -244,10 +236,5 @@ public class ARGameManager : MonoBehaviour
     {
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
         nm.SendPlayerKilledEvent();
-
     }
-
-
-
-
 }

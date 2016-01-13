@@ -49,7 +49,6 @@ public class Player : MonoBehaviour
             EnergyBall eb = collision.gameObject.GetComponent<EnergyBall> ();
             if(eb != null)
             {
-                Debug.Log ("hit by energyball");
                 currentHealth -= eb.damage;
                 if (currentHealth <= 0.0f)
                     Die ();
@@ -61,6 +60,5 @@ public class Player : MonoBehaviour
     {
         transform.position = spawnPoint;
         currentHealth = 0.75f * completeHealth;
-        Debug.Log ("gestorben");
     }
 }
