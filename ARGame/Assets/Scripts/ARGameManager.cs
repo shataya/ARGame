@@ -62,7 +62,7 @@ public class ARGameManager : MonoBehaviour
                 counter.gameObject.SetActive(false);
                 var ml = player.GetComponent<MonsterLauncher>();
                 ml.ActivateEnemies();
-
+                transform.position = GetComponent<Player> ().spawnPoint;
             }
         }
 
@@ -117,8 +117,7 @@ public class ARGameManager : MonoBehaviour
 
    
     public void findMatches()
-    {
-        
+    {        
         var nd = this.gameObject.GetComponent<ARNetworkDiscovery>();
         nd.Initialize();
         nd.StartAsClient();
