@@ -19,10 +19,8 @@ public class MonsterDataMessage : MessageBase
         var bf = new BinaryFormatter ();
         using (var ms = new MemoryStream ())
         {
-            Debug.Log ("schreibe...");
             bf.Serialize (ms, monsterData);
             var binArr = ms.ToArray ();
-            Debug.Log ("msarr ser: " + binArr.Length);
             writer.WriteBytesFull (binArr);
         }            
     }
@@ -30,17 +28,12 @@ public class MonsterDataMessage : MessageBase
     public override void Deserialize(NetworkReader reader)
     {
         clientId = reader.ReadInt32 ();
-
-        //monsterData = reader.ReadBytesAndSize();
         var payload = reader.ReadBytesAndSize ();
-        Debug.Log ("payoad size: " + (payload == null ? "" : payload.Length.ToString()));
         var bf = new BinaryFormatter ();
 
         using (var ms = new MemoryStream (payload,0,payload.Length))
         {
-            Debug.Log ("lese...");
             monsterData = (MonsterData[])bf.Deserialize (ms);
-            Debug.Log ("msarr des: " + monsterData.Length);
         }
     }
 }

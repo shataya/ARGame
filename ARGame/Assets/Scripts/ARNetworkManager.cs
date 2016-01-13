@@ -41,10 +41,7 @@ public class ARNetworkManager : NetworkManager {
             var secondsPlayed = now.Subtract(startTime).TotalSeconds;
             if(secondsPlayed >= 0)
             {
-                if(lastCheck==null)
-                {
-                    lastCheck = now;
-                } else if(now.Subtract(lastCheck).TotalSeconds > 10)
+                if(now.Subtract(lastCheck).TotalSeconds > 10)
                 {
                     lastCheck = now;
                     foreach(KeyValuePair<int, PlayerStatus> pair in playerStatusList)
@@ -121,7 +118,6 @@ public class ARNetworkManager : NetworkManager {
 
     public void OnServerPlayerKilledReceived(NetworkMessage netMsg)
     {
-        PlayerKilledMessage message = netMsg.ReadMessage<PlayerKilledMessage>();
         var ps = playerStatusList[netMsg.conn.connectionId];
         ps.points -= 120;
     }
@@ -147,7 +143,6 @@ public class ARNetworkManager : NetworkManager {
     public void OnServerMonsterDataReceived(NetworkMessage netMsg)
     {
         MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
-        Debug.Log (message == null ? "msg on srv is null" : (message.monsterData == null ? "monsterData null bei serverRec" : message.monsterData.Length.ToString ()));
         message.clientId = netMsg.conn.connectionId;
 
         foreach (var client in clientsOnServer)
@@ -197,7 +192,6 @@ public class ARNetworkManager : NetworkManager {
     {
         //Erhalt der gegnerischen Einheiten
         MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
-        Debug.Log (message == null ? "msg on client is null" : (message.monsterData == null ? "monsterData null bei clientRec" : message.monsterData.Length.ToString()));
         OnMonsterDataReceived (message);
     }
  

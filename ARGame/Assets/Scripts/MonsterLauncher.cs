@@ -10,6 +10,7 @@ public class MonsterLauncher : MonoBehaviour
 {
     public GameObject monsterPrefab;
     public GameObject monsterPrefabWithoutCollider;
+    public GameObject placeMessage;
 
     public List<Text> attackMonsters;
     public List<Text> defMonsters;
@@ -18,7 +19,6 @@ public class MonsterLauncher : MonoBehaviour
 
     private Dictionary<int, GameObject> placedMonsters;
     private Dictionary<int, List<GameObject>> enemyMonsters;
-    private List<GameObject> enemyGroups;
 
     public int attackValueAmount = 40;
     public int defenseValueAmount = 40;
@@ -49,8 +49,7 @@ public class MonsterLauncher : MonoBehaviour
     {
         placedMonsters = new Dictionary<int, GameObject> ();
         enemyMonsters = new Dictionary<int, List<GameObject>> ();
-        enemyGroups = new List<GameObject>();
-        monsterDetectionRadius = monsterPrefab.GetComponent<ARMonster> ().detectionRadius;
+        monsterDetectionRadius = monsterPrefab.GetComponent<ARMonster> ().detectionRadius+1f;
     }
 
 	// Use this for initialization
@@ -81,7 +80,7 @@ public class MonsterLauncher : MonoBehaviour
             //...??
         }
         if (!placedMonsters.ContainsKey (id) && 
-            placedMonsters.Count (kv => GameUtil.IsInRadius (transform.position, 10.0f, kv.Value.transform.position)) == 0)
+            placedMonsters.Count (kv => GameUtil.IsInRadius (transform.position, monsterDetectionRadius, kv.Value.transform.position)) == 0)
         {
             monsterImages[id].color = new Color(1,1,1,0.5f);
 
@@ -115,9 +114,23 @@ public class MonsterLauncher : MonoBehaviour
         }        
         else
         {
-          //  Debug.LogError ("Monster konnte nicht platziert werden. Entweder bereits gesetzt oder der aktuelle Punkt ist zu nah an einem anderen.");
-            // TODO: Irgendwas ausgeben
+            StartCoroutine (ShowPlaceError ());
         }
+    }
+
+    IEnumerator ShowPlaceError()
+    {
+        var now = Time.time;
+
+        while(Time.time < now + 2.0f)
+        {
+            if(!placeMessage.activeInHierarchy)
+                placeMessage.SetActive (true);
+            yield return null;
+        }
+
+        placeMessage.SetActive (false);
+        yield break;
     }
 
     public void activateSkills(int id)
