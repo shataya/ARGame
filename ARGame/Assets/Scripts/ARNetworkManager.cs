@@ -41,7 +41,8 @@ public class ARNetworkManager : NetworkManager {
     private DateTime startTime;
     private DateTime lastCheck;
 
-    private NetworkClient cachedClient;
+ 
+
 
     private ARLobbyManager lobbyManager;
     /// <summary>
@@ -178,16 +179,16 @@ public class ARNetworkManager : NetworkManager {
 
 
     /// <summary>
-    /// Workaround zum Cachen des Clients, Bug in Unet?
+    /// Starten des CLients
     /// </summary>
     /// <param name="networkAddress"></param>
     /// <param name="networkPort"></param>
-    internal void StartClientWithCache(string networkAddress, int networkPort)
+    internal void StartClient(string networkAddress, int networkPort)
     {
         this.networkAddress = networkAddress;
         this.networkPort = networkPort;
 
-        cachedClient = this.StartClient();
+       this.StartClient();
     }
 
 

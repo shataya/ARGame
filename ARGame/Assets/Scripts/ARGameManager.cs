@@ -162,7 +162,7 @@ public class ARGameManager : MonoBehaviour
        
         var networkAddress = GetComponent<ARNetworkDiscoveryHandler>().DropdownMatches.options[match].text;
         var networkPort = 7777;
-        nm.StartClientWithCache(networkAddress, networkPort);
+        nm.StartClient(networkAddress, networkPort);
        
         startBlock.SetActive(false);
         lobbyBlock.SetActive(true);
