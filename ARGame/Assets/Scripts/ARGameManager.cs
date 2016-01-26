@@ -6,34 +6,66 @@ using System.Collections.Generic;
 using System;
 using UnityEngine.UI;
 
+/// <summary>
+/// Der ARGameManager ist die zentrale Klasse zum Steuern des Spiels an sich, also Erstellung eines neuen Matches, Finden von Matches, Spielstart und Spielende.
+/// Hierüber wird auch die Menü-UI und HUD gesteuert.
+/// </summary>
 public class ARGameManager : MonoBehaviour
 {
+
+    #region Menüpanels
     public GameObject startBlock;
     public GameObject lobbyBlock;
     public GameObject floorBlock;
- 
+    #endregion
+
+    #region HUD
     public Text counter;
     public Text ownPoints;
     public Text ownLifes;
     public Text enemyPoints;
     public Text enemyLifes;
+    public GameObject hud;
+    #endregion
+
+    #region Event-Message-Texte
     public GameObject wonMessage;
     public GameObject lostMessage;
+    #endregion
+
     public GameObject player;
-    public GameObject hud;
 
+    /// <summary>
+    /// Start-Zeitpunkt 
+    /// </summary>
     public DateTime startTime;
-
+    /// <summary>
+    /// Flag, ob das SPiel bereits gestartet wurde
+    /// </summary>
     public bool started = false;
 
-    private int enemyClientId;
+    /// <summary>
+    /// Zeitpunkt der letzten Keepalive-Message
+    /// </summary>
     private DateTime lastCheck;
+
+    /// <summary>
+    /// Flag, ob einem Spiel begeitreten wurde
+    /// </summary>
     private bool joined = false;
 
+    /// <summary>
+    /// Connection-ID des Gegners
+    /// </summary>
+    private int enemyClientId;
+
+  
+    /// <summary>
+    /// Status-Informationen für alle verbundenen Spieler
+    /// </summary>
     private Dictionary<int, PlayerStatus> playerStatusList;
 
-    
-
+   
 
     // Use this for initialization
     void Start()
@@ -81,12 +113,10 @@ public class ARGameManager : MonoBehaviour
            
     }
 
-    public void OnEnemyMonsterDied(int clientId)
-    {
-        var nm = this.gameObject.GetComponent<ARNetworkManager>();
-        nm.SendMonsterKilledEvent(clientId);
-    }
-
+  
+    /// <summary>
+    /// Startet ein neues Match
+    /// </summary>
     public void startMatch()
     {
         Debug.Log("Start Match");
@@ -111,6 +141,9 @@ public class ARGameManager : MonoBehaviour
     }
 
    
+    /// <summary>
+    /// Sucht Matches im Netzwerk
+    /// </summary>
     public void findMatches()
     {        
         var nd = this.gameObject.GetComponent<ARNetworkDiscovery>();
@@ -119,6 +152,10 @@ public class ARGameManager : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Beitreten eines Matches
+    /// </summary>
+    /// <param name="match">ID des Matches</param>
     public void joinMatch(int match)
     {
         var nm = this.gameObject.GetComponent<ARNetworkManager>();
@@ -136,6 +173,7 @@ public class ARGameManager : MonoBehaviour
         joined = true;
     }
 
+
     public void backToLobby()
     {
         lobbyBlock.SetActive(true);
@@ -150,15 +188,21 @@ public class ARGameManager : MonoBehaviour
        
     }
 
-    public void AddPlayerToMatch(int clientId)
+    /// <summary>
+    /// Senden eines Events, dass ein Monster getötet wurde
+    /// </summary>
+    /// <param name="clientId">Client-ID des Monsters</param>
+    public void OnEnemyMonsterDied(int clientId)
     {
-        if(!playerStatusList.ContainsKey(clientId))
-        {
-            playerStatusList.Add(clientId, new PlayerStatus());
-        }
-       
+        var nm = this.gameObject.GetComponent<ARNetworkManager>();
+        nm.SendMonsterKilledEvent(clientId);
     }
 
+
+
+    /// <summary>
+    /// Senden der eigenen Monsterpositionsdaten an den Server
+    /// </summary>
     public void sendMonsterData()
     {
         var ml = player.GetComponent<MonsterLauncher>();
@@ -176,6 +220,12 @@ public class ARGameManager : MonoBehaviour
        
     }
 
+
+
+    /// <summary>
+    /// Startet das Spiel mit einem bestimmten Startzeitpunkt
+    /// </summary>
+    /// <param name="startTime">Startzeitpunkt</param>
     public void startGame(long startTime)
     {
         if(!started)
@@ -185,7 +235,6 @@ public class ARGameManager : MonoBehaviour
             System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
             this.startTime = dtDateTime.AddSeconds(startTime).ToUniversalTime();
 
-
             this.started = true;
 
             hud.SetActive(true);
@@ -193,6 +242,23 @@ public class ARGameManager : MonoBehaviour
       
     }
 
+    /// <summary>
+    /// Hinzufügen eines neu verbundenen Spieler
+    /// </summary>
+    /// <param name="clientId"></param>
+    public void AddPlayerToMatch(int clientId)
+    {
+        if (!playerStatusList.ContainsKey(clientId))
+        {
+            playerStatusList.Add(clientId, new PlayerStatus());
+        }
+
+    }
+
+    /// <summary>
+    ///  Leitet die gegnerischen Monsterpositionsdaten an den Monsterlauncher weiter, der die Monster platziert
+    /// </summary>
+    /// <param name="monsterDataMessage">Nachricht vom Server mit gegnerischen Monsterpositionsdaten</param>
     public void saveMonsterData(MonsterDataMessage monsterDataMessage)
     {
         var ml = player.GetComponent<MonsterLauncher>();
@@ -200,6 +266,12 @@ public class ARGameManager : MonoBehaviour
         ml.SetEnemies(monsterDataMessage.clientId, monsterDataMessage.monsterData);
     }
 
+
+    /// <summary>
+    /// Aktualisiert die Anzeige für die Lebens- und Punkteanzeige bei eintreffenden
+    /// Status-Updates
+    /// </summary>
+    /// <param name="message">Update-Nachricht vom Server</param>
     private void updatePlayerStatus(PlayerStatusUpdateMessage message)
     {
         var ps = playerStatusList[message.clientId];
@@ -234,6 +306,9 @@ public class ARGameManager : MonoBehaviour
     }
 
 
+    /// <summary>
+    ///  Eigener Spieler ist gestorben, sende Nachricht an den Server
+    /// </summary>
     public void playerDie()
     {
         var nm = this.gameObject.GetComponent<ARNetworkManager>();

@@ -6,9 +6,11 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.UI;
 
+/// <summary>
+/// Klasse zum Finden von Servern im lokalen Netzwerk
+/// </summary>
 public class ARNetworkDiscovery : NetworkDiscovery
 {
-    //private bool isConnected;
     private NetworkClient client;
     private Dictionary<string, string> foundMatches;
 
@@ -27,32 +29,12 @@ public class ARNetworkDiscovery : NetworkDiscovery
             foundMatches.Add(fromAddress, data);
             this.gameObject.GetComponent<ARNetworkDiscoveryHandler>().onMatchFound(fromAddress);
         }
-        
-
-
-    /*    if (!isConnected)
-        {
-            isConnected = true;
-            Debug.LogFormat("Recieved from {0}", fromAddress);
-            
-            NetworkManager nm = this.GetComponent<NetworkManager>();
-            nm.logLevel = LogFilter.FilterLevel.Info;
-            nm.networkAddress = fromAddress;
-            nm.networkPort = 7777;
-
-            client = nm.StartClient();
-            client.RegisterHandler(MsgType.Connect, OnConnected);
-        }*/
+   
     }
 
     private void OnConnected(NetworkMessage netMsg)
     {
         Debug.Log("onconnected");
-      /*  var addPlayerMessage = new AddPlayerMessage();
-       
-        if(!client.Send(MsgType.AddPlayer, new AddPlayerMessage()))
-        {
-            Debug.LogError("Send misslungen");
-        }*/
+      
     }
 }

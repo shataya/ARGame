@@ -2,11 +2,18 @@
 using System.Collections;
 using UnityEngine.UI;
 
+/// <summary>
+/// Klasse zum Handlen des Dropdown-Menüs für die gefundene Matches-Anzeige
+/// </summary>
 public class ARNetworkDiscoveryHandler : MonoBehaviour {
 
     public Dropdown DropdownMatches;
 
 
+    /// <summary>
+    /// Fügt einen neuen Eintrag zum Dropdown-Menü hinzu
+    /// </summary>
+    /// <param name="address">IP-Adresse des Matches</param>
     public void onMatchFound(string address)
     {
         var option = new Dropdown.OptionData();

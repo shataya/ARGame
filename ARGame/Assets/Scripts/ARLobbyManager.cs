@@ -14,6 +14,11 @@ public class ARLobbyManager : MonoBehaviour
         playerList = GameObject.FindGameObjectWithTag("PlayerList");             
     }
 
+
+    /// <summary>
+    /// Fügt einen Spieler zur Lobby hinzu
+    /// </summary>
+    /// <param name="client"></param>
     public void AddPlayer(ARClient client)
     {
         if (playerList == null)
@@ -30,6 +35,10 @@ public class ARLobbyManager : MonoBehaviour
         b.GetComponent<RectTransform>().transform.localPosition = new Vector3(0, 0, 0);
     }
 
+
+    /// <summary>
+    /// Sendet eine Nachricht zum Server, dass der Spieler bereit ist
+    /// </summary>
     public void readyForMatch()
     {
         var nm = this.gameObject.GetComponent<ARNetworkManager>();

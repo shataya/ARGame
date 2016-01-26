@@ -6,26 +6,65 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Networking.NetworkSystem;
 
+
+/// <summary>
+/// Zentrale Klasse zum Steuern der Multiplayer-Komponente, wird sowohl von den Clients, als auch vom Server bzw. Host verwendet
+/// </summary>
 public class ARNetworkManager : NetworkManager {
 
-
+    /// <summary>
+    /// Liste mit verbundenen Clients auf dem Server
+    /// </summary>
     private List<ARClient> clientsOnServer = new List<ARClient>();
+
+    /// <summary>
+    /// Liste mit Verbindungen auf dem Client
+    /// </summary>
     private List<ARClient> connectionsOnClient = new List<ARClient>();
-    private ARLobbyManager lobbyManager;
-    internal Action<int> OnPlayerAdded;
-    private Dictionary<int, PlayerStatus> playerStatusList;
 
+    /// <summary>
+    /// Callback, wenn Monsterdaten empfangen wurden (Client)
+    /// </summary>
     public Action<MonsterDataMessage> OnMonsterDataReceived { get; set; }
-
+    /// <summary>
+    /// Callback, wenn Spielstart empfangen wurde (Client)
+    /// </summary>
     public Action<long> OnStartGame { get; set; }
-
+    /// <summary>
+    /// Callback, wenn Spielerstatusupdate empfangen wurde (Client)
+    /// </summary>
     public Action<PlayerStatusUpdateMessage> OnPlayerStatusUpdate;
 
     bool gameStarted = false;
+    bool gameFinish = false;
+
     private DateTime startTime;
     private DateTime lastCheck;
-    bool gameFinish = false;
+
     private NetworkClient cachedClient;
+
+    private ARLobbyManager lobbyManager;
+    /// <summary>
+    /// Callback, wenn ein Spieler dem Match beigetreten ist (Client)
+    /// </summary>
+    internal Action<int> OnPlayerAdded;
+    private Dictionary<int, PlayerStatus> playerStatusList;
+
+    /// <summary>
+    /// Erweiterung um eigene Message-Typen
+    /// </summary>
+    public class MyMsgType
+    {
+        public static short ClientAdded = MsgType.Highest + 1;
+        public static short ClientReady = MsgType.Highest + 2;
+        public static short MonsterDataSent = MsgType.Highest + 3;
+        public static short StartGame = MsgType.Highest + 4;
+        public static short MonsterKilled = MsgType.Highest + 5;
+        public static short PlayerStatusUpdate = MsgType.Highest + 6;
+        public static short PlayerKilled = MsgType.Highest + 7;
+        public static short KeepAlive = MsgType.Highest + 8;
+    };
+
 
     private void Awake()
     {
@@ -34,6 +73,9 @@ public class ARNetworkManager : NetworkManager {
 
     }
 
+    /// <summary>
+    /// Punkteberechnung auf dem Server
+    /// </summary>
     private void Update()
     {
         if(gameStarted && !gameFinish)
@@ -65,11 +107,17 @@ public class ARNetworkManager : NetworkManager {
             } 
           
         }
-            //1 Punkt pro Sekunde, pro Gegner
+          
 
  
     }
 
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Senden einer Keep-Alive-Message
+    /// 
+    /// </summary>
     internal void SendKeepAliveMessage()
     {
         if(client!=null && client.isConnected)
@@ -80,19 +128,13 @@ public class ARNetworkManager : NetworkManager {
        
     }
 
-    public class MyMsgType
-    {
-        public static short ClientAdded = MsgType.Highest + 1;
-        public static short ClientReady = MsgType.Highest + 2;
-        public static short MonsterDataSent = MsgType.Highest + 3;
-        public static short StartGame = MsgType.Highest + 4;
-        public static short MonsterKilled = MsgType.Highest + 5; 
-        public static short PlayerStatusUpdate = MsgType.Highest + 6;
-        public static short PlayerKilled = MsgType.Highest + 7;
-         public static short KeepAlive = MsgType.Highest + 8;
-};
-
-
+   
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Senden des Events, Monster wurde getötet, an den Server
+    /// </summary>
+    /// <param name="clientId"></param>
     public void SendMonsterKilledEvent(int clientId)
     {
         MonsterKilledMessage monsterKilledMessage = new MonsterKilledMessage();
@@ -101,7 +143,12 @@ public class ARNetworkManager : NetworkManager {
 
     }
 
-
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Senden des Events, Spieler ist tot, an den Server
+    /// 
+    /// </summary>
     public void SendPlayerKilledEvent()
     {
         PlayerKilledMessage killMessage = new PlayerKilledMessage();
@@ -110,6 +157,13 @@ public class ARNetworkManager : NetworkManager {
 
     }
 
+
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Senden der eigenen Monsterpositionsdaten
+    /// </summary>
+    /// <param name="monsterData"></param>
     public void sendMonsterDataToServer(MonsterData[] monsterData)
     {
         MonsterDataMessage monsterDataMessage = new MonsterDataMessage();
@@ -121,6 +175,13 @@ public class ARNetworkManager : NetworkManager {
         client.Send(MyMsgType.MonsterDataSent, monsterDataMessage);       
     }
 
+
+
+    /// <summary>
+    /// Workaround zum Cachen des Clients, Bug in Unet?
+    /// </summary>
+    /// <param name="networkAddress"></param>
+    /// <param name="networkPort"></param>
     internal void StartClientWithCache(string networkAddress, int networkPort)
     {
         this.networkAddress = networkAddress;
@@ -129,11 +190,25 @@ public class ARNetworkManager : NetworkManager {
         cachedClient = this.StartClient();
     }
 
+
+    /// <summary>
+    /// SERVER
+    /// 
+    /// Handler für eingehende Nachrichten, dass ein Spieler gestorben ist
+    /// </summary>
+    /// <param name="netMsg"></param>
     public void OnServerPlayerKilledReceived(NetworkMessage netMsg)
     {
         var ps = playerStatusList[netMsg.conn.connectionId];
         ps.points -= 120;
     }
+
+    /// <summary>
+    /// SERVER
+    /// 
+    /// Handler für eingehende Nachrichten, dass ein Monster getötet wurde
+    /// </summary>
+    /// <param name="netMsg"></param>
     public void OnServerMonsterKilledReceived(NetworkMessage netMsg)
     {
         MonsterKilledMessage message = netMsg.ReadMessage<MonsterKilledMessage>();
@@ -153,6 +228,14 @@ public class ARNetworkManager : NetworkManager {
         NetworkServer.SendToAll(MyMsgType.PlayerStatusUpdate, updateMessage);
     }
 
+    /// <summary>
+    /// SERVER
+    /// 
+    /// Handler für eingehende Nachrichten mit Monsterpositionsdaten eines Spielers
+    /// Verteilt die Daten an die anderen Spieler und überprüft, ob alle Spieler bereits ihre Daten gesendet haben,
+    /// falls ja, wird das Spiel gestartet
+    /// </summary>
+    /// <param name="netMsg"></param>
     public void OnServerMonsterDataReceived(NetworkMessage netMsg)
     {
         MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
@@ -199,15 +282,15 @@ public class ARNetworkManager : NetworkManager {
     }
 
 
-   
 
-    public void OnClientMonsterDataReceived(NetworkMessage netMsg)
-    {
-        //Erhalt der gegnerischen Einheiten
-        MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
-        OnMonsterDataReceived (message);
-    }
- 
+
+    /// <summary>
+    /// SERVER
+    /// 
+    /// Handler für eingehende Verbindungen auf dem Server, d.h. ein Spieler ist dem Match beigetreten,
+    /// es werden die passenden Handler für diese Verbindungen gesetzt und das Event wird an alle bereits verbundenen Spieler gesendet
+    /// </summary>
+    /// <param name="netMsg"></param>
 
     public override void OnServerConnect(NetworkConnection conn)
     {
@@ -249,6 +332,13 @@ public class ARNetworkManager : NetworkManager {
 
     }
 
+
+    /// <summary>
+    /// SERVER
+    /// 
+    /// Handler für eingehende Nachrichten, dass ein Client sich erfolgreich verbunden hat
+    /// </summary>
+    /// <param name="netMsg"></param>
     private void OnServerPlayerIsSuccessfullyConnected(NetworkMessage netMsg)
     {
         var msg = new ClientAddedMessage();
@@ -261,19 +351,31 @@ public class ARNetworkManager : NetworkManager {
 
     private void OnServerPlayerKeepAlive(NetworkMessage netMsg)
     {
-       //SPieler lebt
+       //Spieler-Verbindung lebt
     }
 
-    private void OnServerReady(NetworkMessage netMsg)
+   
+
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Handler für eingehende Nachrichten mit gegnerischen Monsterpositionsdaten
+    /// </summary>
+    /// <param name="netMsg"></param>
+    public void OnClientMonsterDataReceived(NetworkMessage netMsg)
     {
-        // Player is ready
-        var msg = new ClientReadyMessage();
-        msg.ClientConnectionId = netMsg.conn.connectionId;
-        NetworkServer.SendToAll(MyMsgType.ClientReady, msg);
-        Debug.LogFormat("Server: Player is ready - {0}", msg.ClientConnectionId);
+        //Erhalt der gegnerischen Einheiten
+        MonsterDataMessage message = netMsg.ReadMessage<MonsterDataMessage>();
+        OnMonsterDataReceived(message);
     }
 
 
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Handler für das Event, dass sich der Client erfolgreich mit dem Server verbunden hat
+    /// </summary>
+    /// <param name="netMsg"></param>
     public override void OnClientConnect(NetworkConnection conn)
     {
         // With Server connected
@@ -290,12 +392,26 @@ public class ARNetworkManager : NetworkManager {
         client.Send(MyMsgType.ClientAdded, new ClientAddedMessage());
     }
 
+
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Handler für eingehende Nachrichten mit Playerstatusupdates
+    /// </summary>
+    /// <param name="netMsg"></param>
     private void OnClientPlayerStatusUpdate(NetworkMessage netMsg)
     {
 
         var updateMessage = netMsg.ReadMessage<PlayerStatusUpdateMessage>();
         OnPlayerStatusUpdate(updateMessage);
     }
+
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Handler für eingehende Nachrichten, dass ein Spiel gestartet wurde
+    /// </summary>
+    /// <param name="netMsg"></param>
 
     private void OnClientStartGame(NetworkMessage netMsg)
     {
@@ -304,6 +420,12 @@ public class ARNetworkManager : NetworkManager {
         OnStartGame (msg.startTime);
     }
 
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Handler für eingehende Nachrichten, dass sich ein Spieler verbunden hat
+    /// </summary>
+    /// <param name="netMsg"></param>
     public void OnClientAdded(NetworkMessage netMsg)
     {
         var msg = netMsg.ReadMessage<ClientAddedMessage>();
@@ -333,7 +455,12 @@ public class ARNetworkManager : NetworkManager {
         
     }
 
-
+    /// <summary>
+    /// CLIENT
+    /// 
+    /// Handler, das ein Spieler bereit ist
+    /// </summary>
+    /// <param name="netMsg"></param>
     private void OnClientReady(NetworkMessage netMsg)
     {
         // Player is ready
