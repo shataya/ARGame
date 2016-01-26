@@ -73,11 +73,8 @@ public class MonsterLauncher : MonoBehaviour
     {
         if(placedMonsters.ContainsKey(id) && placedMonsters.Count(kv => GameUtil.IsInRadius(transform.position, monsterDetectionRadius, kv.Value.transform.position)) == 0)
         {
-            //remove first
             Destroy(placedMonsters[id]);
             placedMonsters.Remove(id);
-            
-            //...??
         }
         if (!placedMonsters.ContainsKey (id) && 
             placedMonsters.Count (kv => GameUtil.IsInRadius (transform.position, monsterDetectionRadius, kv.Value.transform.position)) == 0)

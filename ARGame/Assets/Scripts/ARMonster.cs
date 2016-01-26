@@ -3,12 +3,18 @@ using System.Collections;
 using UnityEngine.UI;
 using System;
 
+/// <summary>
+/// Attack Modus: Linker oder Rechter Flügel
+/// </summary>
 public enum AttackMode : int
 {
     Left = 0,
     Right
 }
 
+/// <summary>
+/// Basisklasse für das Monsterverhalten
+/// </summary>
 public class ARMonster : MonoBehaviour
 {
     private GameObject player;
@@ -19,7 +25,6 @@ public class ARMonster : MonoBehaviour
     private bool canSeePlayer;
     private bool generateNewPos = true;
 
-    // kommt weg, eig stehen daten in monsterdata
     private Vector3 tempPos;
     private Vector3 newSlidePos;
     private int attackHash = Animator.StringToHash ("Attack");
@@ -166,6 +171,9 @@ public class ARMonster : MonoBehaviour
         generateNewPos = true;
     }
 
+    /// <summary>
+    /// Gegnersuche
+    /// </summary>
     void SearchForPlayer()
     {
         // Suche nach Gegner
@@ -190,16 +198,26 @@ public class ARMonster : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Angriffsanimation starten
+    /// </summary>
     void Attack()
     {
         animator.SetBool (attackHash, true);
     }
 
+    /// <summary>
+    /// Blockanimation starten
+    /// </summary>
     void Block()
     {
         animator.SetBool (blockHash, true);
     }
 
+    /// <summary>
+    /// Schießen eines Energyballs
+    /// </summary>
+    /// <param name="mode">Gibt an, in welchem Modus die Attacke ausgeführt wird</param>
     void Shoot(int mode)
     {
         GameObject ball = null;
@@ -224,6 +242,10 @@ public class ARMonster : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Starte Sterbe-Routine
+    /// </summary>
+    /// <returns></returns>
     IEnumerator Die()
     {
         canInteract = false;
@@ -234,6 +256,11 @@ public class ARMonster : MonoBehaviour
         OnDie(ClientId);
     }
 
+    /// <summary>
+    /// Coroutine, die die Trefferzahl anzeigt (mit Animation)
+    /// </summary>
+    /// <param name="hitInfo">Beinhaltet Informationen über den Treffer</param>
+    /// <returns></returns>
     IEnumerator AnimateHitInfo(GameObject hitInfo)
     {
         Material material = hitInfo.GetComponent<MeshRenderer> ().material;
@@ -252,6 +279,11 @@ public class ARMonster : MonoBehaviour
         yield break;
     }
 
+    /// <summary>
+    /// Trefferregistrierung und -folgen (Energiereduktion, evtl. Tod)
+    /// </summary>
+    /// <param name="point">Trefferstelle</param>
+    /// <param name="mode">Treffermodus</param>
     public void TakeHit(Vector3 point, HitMode mode)
     {
         if(canInteract && canSeePlayer)

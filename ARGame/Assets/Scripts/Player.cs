@@ -3,6 +3,9 @@ using System.Collections;
 using System;
 using UnityEngine.Events;
 
+/// <summary>
+/// Klasse für den Spieler
+/// </summary>
 public class Player : MonoBehaviour
 {
     public float currentHealth;
@@ -56,6 +59,9 @@ public class Player : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Spielertod
+    /// </summary>
     void Die()
     {
         transform.position = spawnPoint;

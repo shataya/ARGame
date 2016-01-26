@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Klasse für die Energiekugel des ARMonsters
+/// </summary>
 public class EnergyBall : MonoBehaviour
 {
     private Vector3 origin;

@@ -1,6 +1,9 @@
 ﻿using System;
 using UnityEngine;
 
+/// <summary>
+/// Monsterdaten, die über das Netzwerk serialisiert werden
+/// </summary>
 [Serializable]
 public class MonsterData
 {
