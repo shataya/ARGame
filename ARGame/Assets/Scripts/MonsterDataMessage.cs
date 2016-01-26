@@ -7,11 +7,18 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
+/// <summary>
+/// Netzwerknachricht, die Monsterdaten beinhaltet
+/// </summary>
 public class MonsterDataMessage : MessageBase
 {
     public MonsterData[] monsterData;
     public int clientId;
 
+    /// <summary>
+    /// Serialisierung der Monsterdaten
+    /// </summary>
+    /// <param name="writer"></param>
     public override void Serialize(NetworkWriter writer)
     {
         writer.Write (clientId);
@@ -25,6 +32,10 @@ public class MonsterDataMessage : MessageBase
         }            
     }
 
+    /// <summary>
+    /// Deserialisierung der Monsterdaten
+    /// </summary>
+    /// <param name="reader"></param>
     public override void Deserialize(NetworkReader reader)
     {
         clientId = reader.ReadInt32 ();
